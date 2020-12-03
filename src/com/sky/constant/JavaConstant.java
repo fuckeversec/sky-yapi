@@ -3,8 +3,8 @@ package com.sky.constant;
 /**
  * java 注解
  *
- * @author chengsheng@qbb6.com
- * @date 2019/5/18 4:49 PM
+ * @author gangyf
+ * @since 2019/5/18 4:49 PM
  */
 public interface JavaConstant {
 

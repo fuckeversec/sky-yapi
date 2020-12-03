@@ -1,38 +1,46 @@
 package com.sky.build;
 
 import com.google.common.base.Strings;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiArrayType;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiPrimitiveType;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.psi.util.PsiUtil;
-import com.qbb.build.KV;
 import com.sky.dto.YapiDubboDTO;
 import com.sky.util.DesUtil;
-import org.codehaus.jettison.json.JSONException;
-
+import com.sky.util.JsonUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import org.codehaus.jettison.json.JSONException;
 
 
 public class BuildJsonForDubbo{
 
     private static NotificationGroup notificationGroup;
-
-    Gson gson= new GsonBuilder().setPrettyPrinting().create();
 
     static {
         notificationGroup = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON, true);
@@ -108,22 +116,24 @@ public class BuildJsonForDubbo{
                 if(psiParameter.getType() instanceof PsiPrimitiveType){
                    //如果是基本类型
                     KV kvClass= KV.create();
-                    kvClass.set(psiParameter.getType().getCanonicalText(),NormalTypes.normalTypes.get(psiParameter.getType().getPresentableText()));
+                    kvClass.set(psiParameter.getType().getCanonicalText(),NormalTypes.NORMAL_TYPES
+                            .get(psiParameter.getType().getPresentableText()));
                     list.add(kvClass);
                 }else if(NormalTypes.isNormalType(psiParameter.getType().getPresentableText())){
                    //如果是包装类型
                     KV kvClass= KV.create();
-                    kvClass.set(psiParameter.getType().getCanonicalText(),NormalTypes.normalTypes.get(psiParameter.getType().getPresentableText()));
+                    kvClass.set(psiParameter.getType().getCanonicalText(),NormalTypes.NORMAL_TYPES
+                            .get(psiParameter.getType().getPresentableText()));
                     list.add(kvClass);
                 }else if(psiParameter.getType().getPresentableText().startsWith("List")){
                     ArrayList listChild=new ArrayList<>();
                     String[] types=psiParameter.getType().getCanonicalText().split("<");
                     if(types.length>1){
                         String childPackage=types[1].split(">")[0];
-                        if(NormalTypes.noramlTypesPackages.keySet().contains(childPackage)){
-                            listChild.add(NormalTypes.noramlTypesPackages.get(childPackage));
-                        }else if(NormalTypes.collectTypesPackages.containsKey(childPackage)){
-                            listChild.add(NormalTypes.collectTypesPackages.get(childPackage));
+                        if(NormalTypes.NORMAL_TYPES_PACKAGES.keySet().contains(childPackage)){
+                            listChild.add(NormalTypes.NORMAL_TYPES_PACKAGES.get(childPackage));
+                        }else if(NormalTypes.COLLECT_TYPES_PACKAGES.containsKey(childPackage)){
+                            listChild.add(NormalTypes.COLLECT_TYPES_PACKAGES.get(childPackage));
                         }else {
                             PsiClass psiClassChild = JavaPsiFacade.getInstance(project).findClass(childPackage, GlobalSearchScope.allScope(project));
                             KV kvObject = getFields(psiClassChild, project);
@@ -138,10 +148,10 @@ public class BuildJsonForDubbo{
                     String[] types=psiParameter.getType().getCanonicalText().split("<");
                     if(types.length>1){
                         String childPackage=types[1].split(">")[0];
-                        if(NormalTypes.noramlTypesPackages.keySet().contains(childPackage)){
-                            setChild.add(NormalTypes.noramlTypesPackages.get(childPackage));
-                        }else if(NormalTypes.collectTypesPackages.containsKey(childPackage)){
-                            setChild.add(NormalTypes.collectTypesPackages.get(childPackage));
+                        if(NormalTypes.NORMAL_TYPES_PACKAGES.keySet().contains(childPackage)){
+                            setChild.add(NormalTypes.NORMAL_TYPES_PACKAGES.get(childPackage));
+                        }else if(NormalTypes.COLLECT_TYPES_PACKAGES.containsKey(childPackage)){
+                            setChild.add(NormalTypes.COLLECT_TYPES_PACKAGES.get(childPackage));
                         }else {
                             PsiClass psiClassChild = JavaPsiFacade.getInstance(project).findClass(childPackage, GlobalSearchScope.allScope(project));
                             KV kvObject = getFields(psiClassChild, project);
@@ -176,7 +186,7 @@ public class BuildJsonForDubbo{
             return null;
         }
         try {
-            String json = gson.toJson(list);
+            String json = JsonUtil.writeValueAsString(list, true);
             yapiDubboDTO.setParams(json);
             String packageName="/"+((PsiJavaFileImpl) psiFile).getPackageName()+"."+selectedClass.getName()+"/1.0/"+psiMethodTarget.getName();
             yapiDubboDTO.setPath(packageName);
@@ -216,7 +226,7 @@ public class BuildJsonForDubbo{
                     String fieldTypeName = type.getPresentableText();
                     //normal Type
                     if (NormalTypes.isNormalType(fieldTypeName)) {
-                        kv.set(name, NormalTypes.normalTypes.get(fieldTypeName));
+                        kv.set(name, NormalTypes.NORMAL_TYPES.get(fieldTypeName));
                     } else if(!(type instanceof PsiArrayType)&&((PsiClassReferenceType) type).resolve().isEnum()) {
                         kv.set(name, fieldTypeName);
                     } else if (type instanceof PsiArrayType) {
@@ -227,7 +237,7 @@ public class BuildJsonForDubbo{
                         if (deepType instanceof PsiPrimitiveType) {
                             list.add(PsiTypesUtil.getDefaultValueOfType(deepType));
                         } else if (NormalTypes.isNormalType(deepTypeName)) {
-                            list.add(NormalTypes.normalTypes.get(deepTypeName));
+                            list.add(NormalTypes.NORMAL_TYPES.get(deepTypeName));
                         } else {
                             if(!pName.equals(PsiUtil.resolveClassInType(deepType).getName())) {
                                 list.add(getFields(PsiUtil.resolveClassInType(deepType), project));
@@ -243,7 +253,7 @@ public class BuildJsonForDubbo{
                         ArrayList list = new ArrayList<>();
                         String classTypeName = iterableClass.getName();
                         if (NormalTypes.isNormalType(classTypeName)) {
-                            list.add(NormalTypes.normalTypes.get(classTypeName));
+                            list.add(NormalTypes.NORMAL_TYPES.get(classTypeName));
                         } else {
                             if(!pName.equals(iterableClass.getName())) {
                                 list.add(getFields(iterableClass, project));
@@ -271,7 +281,7 @@ public class BuildJsonForDubbo{
                         Set set = new HashSet();
                         String classTypeName = iterableClass.getName();
                         if (NormalTypes.isNormalType(classTypeName)) {
-                            set.add(NormalTypes.normalTypes.get(classTypeName));
+                            set.add(NormalTypes.NORMAL_TYPES.get(classTypeName));
                         } else {
                             if(!pName.equals(iterableClass.getName())) {
                                 set.add(getFields(iterableClass, project));

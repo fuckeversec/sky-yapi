@@ -76,11 +76,24 @@ public class JsonUtil {
         return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
     }
 
+    public static String writeValueAsString(Object obj, boolean pretty) {
+        try {
+            if (pretty) {
+                return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+            } else {
+                return OBJECT_MAPPER.writeValueAsString(obj);
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return obj.toString();
+    }
+
     /**
      * 忽略id中的urn字段
      */
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
-    private static class IgnoreURNSchemaFactoryWrapper extends SchemaFactoryWrapper {
+    protected static class IgnoreURNSchemaFactoryWrapper extends SchemaFactoryWrapper {
 
         public IgnoreURNSchemaFactoryWrapper() {
             this(null, new WrapperFactory());
@@ -104,6 +117,5 @@ public class JsonUtil {
             };
         }
     }
-
 
 }

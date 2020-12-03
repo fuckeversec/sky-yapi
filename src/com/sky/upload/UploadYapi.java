@@ -33,8 +33,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 上传到yapi
  *
- * @author chengsheng@qbb6.com
- * @date 2019/1/31 11:41 AM
+ * @author gangyf
+ * @since 2019/1/31 11:41 AM
  */
 public class UploadYapi {
 
@@ -45,8 +45,8 @@ public class UploadYapi {
      * @description: 调用保存接口
      * @param: [yapiSaveParam, attachUpload, path]
      * @return: com.qbb.dto.YapiResponse
-     * @author: chengsheng@qbb6.com
-     * @date: 2019/5/15
+     * @author gangyf chengsheng@qbb6.com
+     * @since: 2019/5/15
      */
     public YapiResponse<?> uploadSave(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
         if (Strings.isNullOrEmpty(yapiSaveParam.getTitle())) {
@@ -106,8 +106,8 @@ public class UploadYapi {
      * @description: 上传文件
      * @param: [url, filePath]
      * @return: java.lang.String
-     * @author: chengsheng@qbb6.com
-     * @date: 2019/5/15
+     * @author gangyf chengsheng@qbb6.com
+     * @since: 2019/5/15
      */
     public String uploadFile(String url, String filePath) {
         HttpPost httpPost = null;
@@ -137,8 +137,8 @@ public class UploadYapi {
      * @description: 获得分类或者创建分类或者
      * @param: [yapiSaveParam]
      * @return: com.qbb.dto.YapiResponse
-     * @author: chengsheng@qbb6.com
-     * @date: 2019/5/15
+     * @author gangyf chengsheng@qbb6.com
+     * @since: 2019/5/15
      */
     public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, String cookies) {
 

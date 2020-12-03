@@ -2,14 +2,13 @@ package com.sky.dto;
 
 import com.google.common.base.Strings;
 import com.sky.constant.YapiConstant;
-
 import java.io.Serializable;
 
 /**
  * 新增菜单
  *
- * @author chengsheng@qbb6.com
- * @date 2019/2/1 10:44 AM
+ * @author gangyf
+ * @since 2019/2/1 10:44 AM
  */
 public class YapiCatMenuParam implements Serializable {
     /**

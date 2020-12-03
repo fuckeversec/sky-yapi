@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * http client 请求工具类
  *
  * @author haowentao
- * @date 2018/1/26.
+ * @since 2018/1/26.
  */
 public class HttpClientUtil {
 

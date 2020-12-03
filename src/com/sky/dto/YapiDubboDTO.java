@@ -5,8 +5,8 @@ import java.io.Serializable;
 /**
  * yapi dubbo 对象
  *
- * @author chengsheng@qbb6.com
- * @date 2019/1/31 5:36 PM
+ * @author gangyf
+ * @since 2019/1/31 5:36 PM
  */
 public class YapiDubboDTO implements Serializable {
     /**

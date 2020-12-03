@@ -3,8 +3,8 @@ package com.sky.dto;
 /**
  * PathVariable 请求参数
  *
- * @author chengsheng@qbb6.com
- * @date 2019/5/24 2:24 PM
+ * @author gangyf
+ * @since 2019/5/24 2:24 PM
  */
 public class YapiPathVariableDTO {
     /**

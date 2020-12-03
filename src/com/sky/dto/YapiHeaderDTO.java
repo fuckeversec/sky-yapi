@@ -3,8 +3,8 @@ package com.sky.dto;
 /**
  * header
  *
- * @author chengsheng@qbb6.com
- * @date 2019/5/9 10:11 PM
+ * @author gangyf
+ * @since 2019/5/9 10:11 PM
  */
 public class YapiHeaderDTO {
     /**

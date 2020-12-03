@@ -1,9 +1,6 @@
 package com.sky.util;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,12 +12,14 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * 文件解压
  *
- * @author chengsheng@qbb6.com
- * @date 2019/5/6 8:16 PM
+ * @author gangyf
+ * @since 2019/5/6 8:16 PM
  */
 public class FileUnZipUtil {
 
