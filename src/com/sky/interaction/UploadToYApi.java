@@ -42,9 +42,9 @@ import org.apache.commons.lang.StringUtils;
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 public class UploadToYApi extends AnAction {
 
-    private Project project;
+    public static Project project;
 
-    private static NotificationGroup notificationGroup;
+    public final static NotificationGroup NOTIFICATION_GROUP;
 
     /**
      * 持久化的setting
@@ -52,7 +52,7 @@ public class UploadToYApi extends AnAction {
     private PersistentState persistentState = PersistentState.getInstance();
 
     static {
-        notificationGroup = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON, true);
+        NOTIFICATION_GROUP = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON, true);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class UploadToYApi extends AnAction {
         try {
             configEntity = this.getConfigEntity(anActionEvent, project);
         } catch (JsonProcessingException e) {
-            NotifyUtil.log(notificationGroup, project, "config deserializer fail, please check config",
+            NotifyUtil.log(NOTIFICATION_GROUP, project, "config deserializer fail, please check config",
                     NotificationType.ERROR);
 
             return;
@@ -79,20 +79,20 @@ public class UploadToYApi extends AnAction {
         boolean tokenCookiesAllEmpty = Strings.isNullOrEmpty(configEntity.getProjectToken()) && Strings
                 .isNullOrEmpty(configEntity.getCookies());
         if (tokenCookiesAllEmpty) {
-            NotifyUtil.log(notificationGroup, project, "please check config, [projectToken, cookies], must set one",
+            NotifyUtil.log(NOTIFICATION_GROUP, project, "please check config, [projectToken, cookies], must set one",
                     NotificationType.ERROR);
         }
 
         if (Objects.isNull(configEntity.getProjectId())) {
-            NotifyUtil.log(notificationGroup, project, "please check config, [projectId]", NotificationType.ERROR);
+            NotifyUtil.log(NOTIFICATION_GROUP, project, "please check config, [projectId]", NotificationType.ERROR);
         }
 
         if (Strings.isNullOrEmpty(configEntity.getyApiUrl())) {
-            NotifyUtil.log(notificationGroup, project, "please check config, [yApiUrl]", NotificationType.ERROR);
+            NotifyUtil.log(NOTIFICATION_GROUP, project, "please check config, [yApiUrl]", NotificationType.ERROR);
         }
 
         if (Strings.isNullOrEmpty(configEntity.getProjectType())) {
-            NotifyUtil.log(notificationGroup, project, "please check config, [projectType]", NotificationType.ERROR);
+            NotifyUtil.log(NOTIFICATION_GROUP, project, "please check config, [projectType]", NotificationType.ERROR);
         }
 
         // 判断项目类型
@@ -138,7 +138,7 @@ public class UploadToYApi extends AnAction {
                     YapiResponse<?> yapiResponse = new UploadYapi()
                             .uploadSave(yapiSaveParam, configEntity.getCookies());
                     if (yapiResponse.getErrcode() != 0) {
-                        NotifyUtil.log(notificationGroup, project,
+                        NotifyUtil.log(NOTIFICATION_GROUP, project,
                                 "sorry ,upload api error cause:" + yapiResponse.getErrmsg(), NotificationType.ERROR);
                     } else {
                         String url =
@@ -146,10 +146,10 @@ public class UploadToYApi extends AnAction {
                                         + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
                                         .get(yapiSaveParam.getMenu());
                         NotifyUtil
-                                .log(notificationGroup, project, "success ,url:  " + url, NotificationType.INFORMATION);
+                                .log(NOTIFICATION_GROUP, project, "success ,url:  " + url, NotificationType.INFORMATION);
                     }
                 } catch (Exception e) {
-                    NotifyUtil.log(notificationGroup, project, "sorry ,upload api error cause:" + e,
+                    NotifyUtil.log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e,
                             NotificationType.ERROR);
                 }
             }
@@ -182,7 +182,7 @@ public class UploadToYApi extends AnAction {
                     YapiResponse yapiResponse = new UploadYapi().uploadSave(yapiSaveParam, project.getBasePath()
                     );
                     if (yapiResponse.getErrcode() != 0) {
-                        NotifyUtil.log(notificationGroup, project,
+                        NotifyUtil.log(NOTIFICATION_GROUP, project,
                                 "sorry ,upload api error cause:" + yapiResponse.getErrmsg(), NotificationType.ERROR);
                     } else {
                         String url =
@@ -190,10 +190,10 @@ public class UploadToYApi extends AnAction {
                                         + "/api/cat_" + UploadYapi.catMap
                                         .get(configEntity.getProjectId());
                         NotifyUtil
-                                .log(notificationGroup, project, "success ,url: " + url, NotificationType.INFORMATION);
+                                .log(NOTIFICATION_GROUP, project, "success ,url: " + url, NotificationType.INFORMATION);
                     }
                 } catch (Exception e) {
-                    NotifyUtil.log(notificationGroup, project, "sorry ,upload api error cause:" + e,
+                    NotifyUtil.log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e,
                             NotificationType.ERROR);
                 }
             }
@@ -211,7 +211,7 @@ public class UploadToYApi extends AnAction {
         ConfigEntity configEntity = null;
         // 获取配置
         if (StringUtils.isBlank(persistentState.getConfig())) {
-            NotifyUtil.log(notificationGroup, project, "get config error: config is blank", NotificationType.ERROR);
+            NotifyUtil.log(NOTIFICATION_GROUP, project, "get config error: config is blank", NotificationType.ERROR);
         }
         Config config = JsonUtil.OBJECT_MAPPER.readValue(persistentState.getConfig(), Config.class);
         if (config.isSingle()) {

@@ -1,10 +1,13 @@
 package com.sky.upload;
 
+import static com.sky.interaction.UploadToYApi.NOTIFICATION_GROUP;
+import static com.sky.interaction.UploadToYApi.project;
 import static com.sky.util.JsonUtil.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.intellij.notification.NotificationType;
 import com.sky.constant.YapiConstant;
 import com.sky.dto.YApiSaveParam;
 import com.sky.dto.YapiCatMenuParam;
@@ -12,6 +15,7 @@ import com.sky.dto.YapiCatResponse;
 import com.sky.dto.YapiHeaderDTO;
 import com.sky.dto.YapiResponse;
 import com.sky.util.HttpClientUtil;
+import com.sky.util.NotifyUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -140,9 +144,8 @@ public class UploadYapi {
      * @author gangyf chengsheng@qbb6.com
      * @since: 2019/5/15
      */
-    public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, String cookies) {
+    public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
 
-        try {
             YapiResponse<Integer> yapiResponse = findFromExist(yapiSaveParam, cookies);
 
             if (yapiResponse != null) {
@@ -150,10 +153,6 @@ public class UploadYapi {
             }
 
             return createCatMenu(yapiSaveParam, cookies);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new YapiResponse<>(0, e.toString());
-        }
     }
 
     @Nullable
@@ -185,6 +184,11 @@ public class UploadYapi {
             if (optional.isPresent()) {
                 return new YapiResponse<>(optional.get().getId());
             }
+        } else {
+            NotifyUtil.log(NOTIFICATION_GROUP, project,
+                    "yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode(),
+                    NotificationType.ERROR);
+            throw new RuntimeException("yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode());
         }
         return null;
     }
@@ -220,7 +224,7 @@ public class UploadYapi {
     private void cacheCatResponse(YApiSaveParam yapiSaveParam, YapiCatResponse catResponse) {
 
         catMap.computeIfAbsent(yapiSaveParam.getProjectId(),
-                (Function<Integer, Map<String, Integer>>) integer -> new HashMap<>())
+                (Function<Integer, Map<String, Integer>>) integer -> new HashMap<>(16))
                 .put(catResponse.getName(), catResponse.getId());
 
     }
