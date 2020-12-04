@@ -3,8 +3,8 @@ package com.sky.constant;
 /**
  * Spring mvc 注解包路径
  *
- * @author chengsheng@qbb6.com
- * @date 2019/2/11 3:57 PM
+ * @author gangyf
+ * @since 2019/2/11 3:57 PM
  */
 public interface SpringMVCConstant {
 

@@ -34,3 +34,5 @@ Thumbs.db
 *.orig
 /bin/
 /target/
+/out/
+/sky-yapi.zip

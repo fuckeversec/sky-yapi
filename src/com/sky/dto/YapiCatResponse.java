@@ -6,8 +6,8 @@ import java.io.Serializable;
 /**
  * 分类列表
  *
- * @author chengsheng@qbb6.com
- * @date 2019/2/1 10:30 AM
+ * @author gangyf
+ * @since 2019/2/1 10:30 AM
  */
 public class YapiCatResponse implements Serializable {
 

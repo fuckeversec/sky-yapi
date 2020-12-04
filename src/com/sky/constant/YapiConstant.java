@@ -3,8 +3,8 @@ package com.sky.constant;
 /**
  * yapi 接口
  *
- * @author chengsheng@qbb6.com
- * @date 2019/1/31 3:29 PM
+ * @author gangyf
+ * @since 2019/1/31 3:29 PM
  */
 public interface YapiConstant {
     /**

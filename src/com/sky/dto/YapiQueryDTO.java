@@ -5,8 +5,8 @@ import java.io.Serializable;
 /**
  * query
  *
- * @author chengsheng@qbb6.com
- * @date 2019/2/11 5:05 PM
+ * @author gangyf
+ * @since 2019/2/11 5:05 PM
  */
 public class YapiQueryDTO implements Serializable {
 

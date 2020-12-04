@@ -1,6 +1,10 @@
 package com.sky.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -9,8 +13,8 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * @description: 文件压缩
- * @author: chengsheng@qbb6.com
- * @date: 2019/5/15
+ * @author gangyf chengsheng@qbb6.com
+ * @since: 2019/5/15
  */
 public class FileToZipUtil {
 

@@ -7,10 +7,13 @@ import java.util.Map;
 /**
  * yapi dto
  *
- * @author chengsheng@qbb6.com
- * @date 2019/2/11 3:16 PM
+ * @author gangyf
+ * @since 2019/2/11 3:16 PM
  */
-public class YapiApiDTO implements Serializable{
+public class YapiApiDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     /**
      * 路径
      */
@@ -22,7 +25,7 @@ public class YapiApiDTO implements Serializable{
     /**
      * 头信息
      */
-    private List header;
+    private List<?> header;
     /**
      * title
      */
@@ -39,7 +42,7 @@ public class YapiApiDTO implements Serializable{
     /**
      * 请求方法
      */
-    private String method="POST";
+    private String method = "POST";
 
     /**
      * 请求 类型 raw,form,json
@@ -48,7 +51,7 @@ public class YapiApiDTO implements Serializable{
     /**
      * 请求form
      */
-    private List<Map<String,String>> req_body_form;
+    private List<Map<String, String>> req_body_form;
 
     /**
      * 描述
@@ -62,7 +65,7 @@ public class YapiApiDTO implements Serializable{
     /**
      * 请求参数
      */
-    private List req_params;
+    private List<?> req_params;
 
 
     public String getPath() {
@@ -79,6 +82,14 @@ public class YapiApiDTO implements Serializable{
 
     public void setParams(List<YapiQueryDTO> params) {
         this.params = params;
+    }
+
+    public List<?> getHeader() {
+        return header;
+    }
+
+    public void setHeader(List<?> header) {
+        this.header = header;
     }
 
     public String getTitle() {
@@ -113,22 +124,6 @@ public class YapiApiDTO implements Serializable{
         this.method = method;
     }
 
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
-    public List getHeader() {
-        return header;
-    }
-
-    public void setHeader(List header) {
-        this.header = header;
-    }
-
     public String getReq_body_type() {
         return req_body_type;
     }
@@ -141,17 +136,16 @@ public class YapiApiDTO implements Serializable{
         return req_body_form;
     }
 
-
-    public List getReq_params() {
-        return req_params;
-    }
-
-    public void setReq_params(List req_params) {
-        this.req_params = req_params;
-    }
-
     public void setReq_body_form(List<Map<String, String>> req_body_form) {
         this.req_body_form = req_body_form;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
     public String getMenu() {
@@ -162,8 +156,29 @@ public class YapiApiDTO implements Serializable{
         this.menu = menu;
     }
 
-    public YapiApiDTO() {
+    public List<?> getReq_params() {
+        return req_params;
     }
 
+    public void setReq_params(List<?> req_params) {
+        this.req_params = req_params;
+    }
 
+    @Override
+    public String toString() {
+        return "YapiApiDTO{" +
+                "path='" + path + '\'' +
+                ", params=" + params +
+                ", header=" + header +
+                ", title='" + title + '\'' +
+                ", response='" + response + '\'' +
+                ", requestBody='" + requestBody + '\'' +
+                ", method='" + method + '\'' +
+                ", req_body_type='" + req_body_type + '\'' +
+                ", req_body_form=" + req_body_form +
+                ", desc='" + desc + '\'' +
+                ", menu='" + menu + '\'' +
+                ", req_params=" + req_params +
+                '}';
+    }
 }
