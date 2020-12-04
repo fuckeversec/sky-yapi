@@ -13,14 +13,11 @@ import org.jetbrains.annotations.Nullable;
  * Copyright (c) Department of Research and Development/Beijing
  * All Rights Reserved.
  * 持久化文件地址
- * /Users/gongxun/Library/Preferences/IntelliJIdea2019.1/options/YApiConfig.xml
- * /Users/gongxun/Library/Caches/IntelliJIdea2019.1/plugins-sandbox/config/options/Users/gongxun/Desktop/YApiConfig.xml
- * /Users/gongxun/Library/Caches/IntelliJIdea2019.1/plugins-sandbox/config/options/YApiConfig.xml
  *
  * @author gangyf
  * @version 1.0 2019年06月14日 15:02
  */
-@State(name = "YApiConfig", storages = {@com.intellij.openapi.components.Storage(file = "$APP_CONFIG$/YApiConfig.xml")})
+@State(name = "YApiConfig", storages = {@com.intellij.openapi.components.Storage(value = "$APP_CONFIG$/YApiConfig.xml")})
 public class PersistentState implements PersistentStateComponent<Element> {
 
     private String config = "";
@@ -40,12 +37,14 @@ public class PersistentState implements PersistentStateComponent<Element> {
     public Element getState() {
         Element element = new Element("YApiConfig");
         element.setAttribute("config", this.getConfig());
+        element.setAttribute("cookies", this.getCookies());
         return element;
     }
 
     @Override
     public void loadState(Element element) {
         this.config = element.getAttributeValue("config");
+        this.cookies = element.getAttributeValue("cookies");
     }
 
 
@@ -62,14 +61,26 @@ public class PersistentState implements PersistentStateComponent<Element> {
      * Sets config.
      *
      * @param config the config
-     * @param cookies the site's cookies
      */
-    public void setConfig(String config, String cookies) {
+    public void setConfig(String config) {
         this.config = config;
-        this.cookies = cookies;
     }
 
+    /**
+     * Gets cookies.
+     *
+     * @return the cookies
+     */
     public String getCookies() {
-        return cookies;
+        return Objects.isNull(cookies) ? "" : cookies;
+    }
+
+    /**
+     * Sets cookies.
+     *
+     * @param cookies the cookies
+     */
+    public void setCookies(String cookies) {
+        this.cookies = cookies;
     }
 }

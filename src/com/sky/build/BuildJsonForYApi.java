@@ -888,7 +888,7 @@ public class BuildJsonForYApi {
                         kv1.set(KV.by("description",
                                 (Strings.isNullOrEmpty(remark) ? ("" + Objects.requireNonNull(psiClassChild).getName()
                                         .trim())
-                                        : remark + " ," + psiClassChild.getName().trim())));
+                                        : remark + ", " + psiClassChild.getName().trim())));
                         if (!pName.equals(psiClassChild.getName())) {
                             List<String> requiredList = new ArrayList<>();
                             kv1.set(KV.by("properties",
@@ -923,7 +923,7 @@ public class BuildJsonForYApi {
                     PsiClass psiClass = PsiUtil.resolveClassInType(deepType);
                     cType = psiClass.getName();
                     kvlist.set(KV.by("description", (Strings.isNullOrEmpty(remark) ? ("" + psiClass.getName().trim())
-                            : remark + " ," + psiClass.getName().trim())));
+                            : remark + ", " + psiClass.getName().trim())));
                     if (!pName.equals(PsiUtil.resolveClassInType(deepType).getName())) {
                         List<String> requiredList = new ArrayList<>();
                         kvlist.set("properties", getFields(psiClass, project, null, null, requiredList));
@@ -964,7 +964,7 @@ public class BuildJsonForYApi {
                 PsiClass psiClass = PsiUtil.resolveClassInType(type);
                 kv1.set(KV.by("type", "object"));
                 kv1.set(KV.by("description", (Strings.isNullOrEmpty(remark) ? ("" + psiClass.getName().trim())
-                        : (remark + " ," + psiClass.getName()).trim())));
+                        : (remark + ", " + psiClass.getName()).trim())));
                 if (!pName.equals(((PsiClassReferenceType) type).getClassName())) {
                     addFilePaths(filePaths, psiClass);
                     List<String> requiredList = new ArrayList<>();
@@ -1038,7 +1038,7 @@ public class BuildJsonForYApi {
         } else {
             kvList.set(KV.by("type", "object"));
             kvList.set(KV.by("description", (Strings.isNullOrEmpty(remark) ? ("" + psiClass.getName().trim())
-                    : remark + " ," + psiClass.getName().trim())));
+                    : remark + ", " + psiClass.getName().trim())));
             if (!pName.equals(psiClass.getName())) {
                 List<String> requiredList = new ArrayList<>();
                 kvList.set("properties", getFields(psiClass, project, childType, index, requiredList));
@@ -1051,7 +1051,7 @@ public class BuildJsonForYApi {
         KV kv1 = new KV();
         kv1.set(KV.by("type", "array"));
         kv1.set(KV.by("description", (Strings.isNullOrEmpty(remark) ? ("" + psiClass.getName().trim())
-                : remark + " ," + psiClass.getName().trim())));
+                : remark + ", " + psiClass.getName().trim())));
         kv1.set("items", kvList);
         kv.set(name, kv1);
     }
