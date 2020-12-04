@@ -214,6 +214,7 @@ public class UploadToYApi extends AnAction {
             NotifyUtil.log(NOTIFICATION_GROUP, project, "get config error: config is blank", NotificationType.ERROR);
         }
         Config config = JsonUtil.OBJECT_MAPPER.readValue(persistentState.getConfig(), Config.class);
+        String cookies = persistentState.getCookies();
         if (config.isSingle()) {
             configEntity = config.getSingleConfig();
         } else {
@@ -228,6 +229,7 @@ public class UploadToYApi extends AnAction {
                         .map(Map.Entry::getValue).findFirst().orElse(null);
             }
         }
+        Objects.requireNonNull(configEntity).setCookies(cookies);
         return configEntity;
     }
 

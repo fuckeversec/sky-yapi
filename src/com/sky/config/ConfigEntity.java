@@ -5,6 +5,7 @@ package com.sky.config;
  * Copyright (c) Department of Research and Development/Beijing
  * All Rights Reserved.
  *
+ * @author gangyf
  * @version 1.0 2019年06月14日 18:45
  */
 public class ConfigEntity {

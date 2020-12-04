@@ -3,10 +3,9 @@ package com.sky.config;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
+import java.util.Objects;
 import org.jdom.Element;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 
 /**
@@ -17,12 +16,15 @@ import java.util.Objects;
  * /Users/gongxun/Library/Preferences/IntelliJIdea2019.1/options/YApiConfig.xml
  * /Users/gongxun/Library/Caches/IntelliJIdea2019.1/plugins-sandbox/config/options/Users/gongxun/Desktop/YApiConfig.xml
  * /Users/gongxun/Library/Caches/IntelliJIdea2019.1/plugins-sandbox/config/options/YApiConfig.xml
+ *
+ * @author gangyf
  * @version 1.0 2019年06月14日 15:02
  */
 @State(name = "YApiConfig", storages = {@com.intellij.openapi.components.Storage(file = "$APP_CONFIG$/YApiConfig.xml")})
 public class PersistentState implements PersistentStateComponent<Element> {
 
-    private String config;
+    private String config = "";
+    private String cookies = "";
 
     /**
      * 服务管理器获取实例
@@ -60,8 +62,14 @@ public class PersistentState implements PersistentStateComponent<Element> {
      * Sets config.
      *
      * @param config the config
+     * @param cookies the site's cookies
      */
-    public void setConfig(String config) {
+    public void setConfig(String config, String cookies) {
         this.config = config;
+        this.cookies = cookies;
+    }
+
+    public String getCookies() {
+        return cookies;
     }
 }
