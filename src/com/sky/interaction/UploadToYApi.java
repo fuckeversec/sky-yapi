@@ -10,8 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import com.sky.build.BuildJsonForDubbo;
 import com.sky.build.BuildJsonForYApi;
 import com.sky.config.Config;
@@ -28,6 +28,7 @@ import com.sky.util.JsonUtil;
 import com.sky.util.NotifyUtil;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import org.apache.commons.lang.StringUtils;
 
@@ -52,7 +53,8 @@ public class UploadToYApi extends AnAction {
     private PersistentState persistentState = PersistentState.getInstance();
 
     static {
-        NOTIFICATION_GROUP = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON, true);
+        NOTIFICATION_GROUP = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON,
+                true);
     }
 
     @Override
@@ -128,10 +130,10 @@ public class UploadToYApi extends AnAction {
                 yapiSaveParam.setReq_params(yapiApiDTO.getReq_params());
                 yapiSaveParam.setReq_body_is_json_schema(configEntity.isReqBodyIsJsonSchema());
                 yapiSaveParam.setRes_body_is_json_schema(configEntity.isResBodyIsJsonSchema());
-                if (!Strings.isNullOrEmpty(configEntity.getMenu())) {
-                    yapiSaveParam.setMenu(configEntity.getMenu());
+                if (!Strings.isNullOrEmpty(yapiApiDTO.getMenu())) {
+                    yapiSaveParam.setMenu(yapiApiDTO.getMenu());
                 } else {
-                    yapiSaveParam.setMenu(YapiConstant.menu);
+                    yapiSaveParam.setMenu(configEntity.getMenu());
                 }
                 try {
                     // 上传
@@ -146,7 +148,8 @@ public class UploadToYApi extends AnAction {
                                         + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
                                         .get(yapiSaveParam.getMenu());
                         NotifyUtil
-                                .log(NOTIFICATION_GROUP, project, "success ,url:  " + url, NotificationType.INFORMATION);
+                                .log(NOTIFICATION_GROUP, project, "success ,url:  " + url,
+                                        NotificationType.INFORMATION);
                     }
                 } catch (Exception e) {
                     NotifyUtil.log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e,
@@ -220,16 +223,18 @@ public class UploadToYApi extends AnAction {
         } else {
             Map<String, ConfigEntity> multipleConfig = config.getMultipleConfig();
             PsiFile psiFile = anActionEvent.getDataContext().getData(CommonDataKeys.PSI_FILE);
-            // current file's module's name
-            String moduleName = Objects.requireNonNull(ProjectRootManager.getInstance(project).getFileIndex()
-                    .getModuleForFile(Objects.requireNonNull(psiFile).getVirtualFile())).getName();
+            // current file's package name
+            String packageName = ((PsiJavaFileImpl) Objects.requireNonNull(psiFile)).getPackageName();
             if (StringUtils.isNotBlank(psiFile.getVirtualFile().getPath())) {
                 configEntity = multipleConfig.entrySet().stream()
-                        .filter(m -> moduleName.equals(m.getKey()))
-                        .map(Map.Entry::getValue).findFirst().orElse(null);
+                        .filter(m -> m.getKey().equals(packageName))
+                        .map(Entry::getValue).findFirst().orElse(null);
+            }
+            if (configEntity == null) {
+                throw new RuntimeException("未找到配置, package: " + packageName);
             }
         }
-        Objects.requireNonNull(configEntity).setCookies(cookies);
+        configEntity.setCookies(cookies);
         return configEntity;
     }
 

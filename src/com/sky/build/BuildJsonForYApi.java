@@ -68,13 +68,13 @@ import org.codehaus.jettison.json.JSONException;
 @SuppressWarnings("unchecked")
 public class BuildJsonForYApi {
 
-    private static NotificationGroup notificationGroup;
+    private static final NotificationGroup notificationGroup;
 
     static {
         notificationGroup = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON, true);
     }
 
-    private static Set<String> filePaths = new CopyOnWriteArraySet<>();
+    private static final Set<String> filePaths = new CopyOnWriteArraySet<>();
 
     /**
      * 批量生成 接口数据
@@ -96,9 +96,11 @@ public class BuildJsonForYApi {
         PsiClass selectedClass = PsiTreeUtil
                 .getContextOfType(psiFile.findElementAt(editor.getCaretModel().getOffset()), PsiClass.class);
         String classMenu = null;
-        assert selectedClass != null;
         if (Objects.nonNull(selectedClass.getDocComment())) {
             classMenu = DesUtil.getMenu(selectedClass.getText());
+            if (Strings.isNullOrEmpty(classMenu)) {
+                classMenu = extractMenuForController(selectedClass);
+            }
         }
         ArrayList<YapiApiDTO> yApiApiDTOs = new ArrayList<>();
         // 如果没有选择方法, 则按照选择类进行处理
@@ -109,6 +111,19 @@ public class BuildJsonForYApi {
             // 选择的是方法 则处理此方法
             return processingSelectedMethod(attachUpload, selectedText, project, selectedClass, classMenu, yApiApiDTOs);
         }
+    }
+
+    /**
+     * 从class中获取注释信息, 作为menu, 去除author等tag信息
+     * 多个空格的转换为一个空格, 去除头尾空格
+     *
+     * @param selectedClass the selected class
+     * @return the string
+     */
+    private String extractMenuForController(PsiClass selectedClass) {
+        int inParent = selectedClass.getDocComment().getTags()[0].getStartOffsetInParent();
+        return selectedClass.getText().substring(0, inParent).replaceAll("[/*]", "").trim()
+                .replaceAll("\\s+", " ");
     }
 
     /**

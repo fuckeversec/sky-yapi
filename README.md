@@ -14,7 +14,7 @@ java
 目前 dubbo 接口/api
 
 #### 支持yapi 的版本
-1.5.0+
+1.3.20+
 
 #### 支持idea 版本
 2017+
@@ -28,6 +28,7 @@ java
 #### 使用方式
    - 1.在idea设置中找到 OtherSettings -> YApiSetting，在配置栏填写JSON配置信息 <br>
    - 2.选中需要上传的接口方法名或类名，右键 -> sky-idea  <br>
+   - 3.低版本yapi中, 使用token上传, 会创建空用户, 可以在cookies中填写Netscape HTTP Cookie规范的cookie信息, 通过cookie操作
 
 #### 开发注意
    - 导入项目需要注意 生成的 ROOT.iml 中 type 必须为PLUGIN_MODULE 才能正常运行其代码

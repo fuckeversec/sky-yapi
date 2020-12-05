@@ -129,13 +129,6 @@ public class YApiSetting implements Configurable {
             return true;
         }
 
-        if (StringUtils.isBlank(cookies.getText())) {
-            return false;
-        }
-        if (StringUtils.isBlank(persistentState.getCookies())) {
-            return true;
-        }
-
         return (persistentState.getConfig().hashCode() != config.getText().hashCode()) ||
                 (persistentState.getCookies().hashCode() != cookies.getText().hashCode());
     }
