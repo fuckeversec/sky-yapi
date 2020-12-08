@@ -122,8 +122,7 @@ public class HttpClientGenerator {
         // TODO
         for (Cookie cookie : parseCookies(cookies)) {
 
-            BasicClientCookie basicClientCookie = new BasicClientCookie(cookie.getName(),
-                    cookie.getValue());
+            BasicClientCookie basicClientCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
             basicClientCookie.setDomain(cookie.getDomain());
             cookieStore.addCookie(basicClientCookie);
         }
@@ -133,7 +132,7 @@ public class HttpClientGenerator {
     private List<Cookie> parseCookies(String cookies) {
         // TODO
         try {
-            return objectMapper.readValue(CookieUtil.parseFirefoxCookie2Json(cookies), new TypeReference<>() {});
+            return objectMapper.readValue(cookies, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

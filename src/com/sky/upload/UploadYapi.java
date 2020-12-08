@@ -79,6 +79,10 @@ public class UploadYapi {
         if (yapiCatId.getErrcode() == 0 && yapiCatId.getData() != null) {
             yapiSaveParam.setCatid(yapiCatId.getData().toString());
             CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(cookies);
+            if (!Strings.isNullOrEmpty(cookies)) {
+                // 使用cookie时, token置空
+                yapiSaveParam.setToken(null);
+            }
             String response = HttpClientUtil.ObjectToString(httpclient.execute(
                     getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiSave,
                             OBJECT_MAPPER.writeValueAsString(yapiSaveParam))), "utf-8");

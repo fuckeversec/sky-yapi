@@ -4,6 +4,7 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBUI;
+import com.sky.util.HttpClientUtil;
 import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -135,6 +136,11 @@ public class YApiSetting implements Configurable {
 
     @Override
     public void apply() {
+        if (!persistentState.getCookies().equals(cookies.getText())) {
+            // 重置httpclient
+            HttpClientUtil.setHttpclientWithCookie(null);
+        }
+
         persistentState.setConfig(config.getText());
         persistentState.setCookies(cookies.getText());
     }

@@ -448,5 +448,7 @@ public class HttpClientUtil {
         return sc;
     }
 
-
+    public static void setHttpclientWithCookie(CloseableHttpClient httpclientWithCookie) {
+        HttpClientUtil.httpclientWithCookie = httpclientWithCookie;
+    }
 }

@@ -10,8 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import com.sky.build.BuildJsonForDubbo;
 import com.sky.build.BuildJsonForYApi;
 import com.sky.config.Config;
@@ -223,15 +223,16 @@ public class UploadToYApi extends AnAction {
         } else {
             Map<String, ConfigEntity> multipleConfig = config.getMultipleConfig();
             PsiFile psiFile = anActionEvent.getDataContext().getData(CommonDataKeys.PSI_FILE);
-            // current file's package name
-            String packageName = ((PsiJavaFileImpl) Objects.requireNonNull(psiFile)).getPackageName();
+            // current file's module's name
+            String moduleName = Objects.requireNonNull(ProjectRootManager.getInstance(project).getFileIndex()
+                    .getModuleForFile(Objects.requireNonNull(psiFile).getVirtualFile())).getName();
             if (StringUtils.isNotBlank(psiFile.getVirtualFile().getPath())) {
                 configEntity = multipleConfig.entrySet().stream()
-                        .filter(m -> m.getKey().equals(packageName))
+                        .filter(m -> m.getKey().equals(moduleName))
                         .map(Entry::getValue).findFirst().orElse(null);
             }
             if (configEntity == null) {
-                throw new RuntimeException("未找到配置, package: " + packageName);
+                throw new RuntimeException("未找到配置, module: " + moduleName);
             }
         }
         configEntity.setCookies(cookies);

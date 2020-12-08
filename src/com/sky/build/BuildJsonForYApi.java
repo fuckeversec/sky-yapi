@@ -223,6 +223,7 @@ public class BuildJsonForYApi {
                     }
                 }
             }
+            path.append("/");
         }
 
         PsiAnnotation psiAnnotationMethod = PsiAnnotationSearchUtil
@@ -293,6 +294,9 @@ public class BuildJsonForYApi {
                 }
             }
         }
+
+        yapiApiDTO.setPath(yapiApiDTO.getPath().replaceAll("(?<!https?:)/{2,}", "/"));
+
         String classDesc = psiMethodTarget.getText()
                 .replace(Objects.nonNull(psiMethodTarget.getBody()) ? psiMethodTarget.getBody().getText() : "", "");
         if (!Strings.isNullOrEmpty(classDesc)) {

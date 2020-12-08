@@ -11,8 +11,8 @@ public class Cookie {
     private String name;
     private String value;
     private String path;
-    private long maxAge;
-    private String secure;
+    private long expirationDate;
+    private boolean secure;
 
     public String getDomain() {
         return domain;
@@ -46,19 +46,19 @@ public class Cookie {
         this.path = path;
     }
 
-    public long getMaxAge() {
-        return maxAge;
+    public long getExpirationDate() {
+        return expirationDate;
     }
 
-    public void setMaxAge(long maxAge) {
-        this.maxAge = maxAge;
+    public void setExpirationDate(long expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
-    public String getSecure() {
+    public boolean getSecure() {
         return secure;
     }
 
-    public void setSecure(String secure) {
+    public void setSecure(boolean secure) {
         this.secure = secure;
     }
 }
