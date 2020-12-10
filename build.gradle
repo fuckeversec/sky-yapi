@@ -1,0 +1,75 @@
+buildscript {
+    ext.kotlin_version = '1.3.50'
+
+    repositories {
+        maven {
+            url 'https://repo1.maven.org/maven2/'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.6.5'
+}
+
+group 'org.sky'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'idea'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    compileOnly('com.itangcent:intellij-idea:0.8.5') {
+        exclude group: 'com.google.inject'
+        exclude group: 'com.google.code.gson'
+    }
+
+    compileOnly('com.itangcent:intellij-kotlin-support:0.8.5') {
+        exclude group: 'com.google.inject'
+        exclude group: 'com.google.code.gson'
+    }
+
+    compileOnly("com.google.inject:guice:4.2.2") {
+        exclude group: 'org.checkerframework', module: 'checker-compat-qual'
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+
+    compileOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+
+    compileOnly(group: 'commons-io', name: 'commons-io', version: '2.6')
+
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    testImplementation("org.assertj:assertj-core:3.18.1")
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+//    version 'IC-2020.3'
+    version '2020.2.4'
+//    version '2017.3.5'
+    plugins = ['java']
+}
+patchPluginXml {
+    changeNotes """
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>"""
+}
+test {
+    useJUnitPlatform()
+}
