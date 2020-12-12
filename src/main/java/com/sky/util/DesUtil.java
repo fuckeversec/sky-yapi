@@ -1,7 +1,6 @@
 package com.sky.util;
 
 import com.google.common.base.Strings;
-import com.intellij.codeInspection.LocalQuickFixOnPsiElement;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -10,19 +9,23 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiEnumConstantImpl;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
+import com.intellij.psi.javadoc.PsiDocTagValue;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.sky.build.BuildJsonForYApi;
+import com.sky.build.NormalTypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -30,50 +33,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class DesUtil {
 
-    public final static Pattern LINK_CLASS = Pattern.compile("(?<=\\{@link ).*?([a-zA-Z_$][a-zA-Z\\d_$]*)"
-            + "(#[a-zA-Z_$][a-zA-Z\\d_$]*)?");
-    public final static Pattern SEE_CLASS = Pattern.compile("(?<=@see ).*?([a-zA-Z_$][a-zA-Z\\d_$]*)"
-            + "(#[a-zA-Z_$][a-zA-Z\\d_$]*)?");
-    private final static List<Function<String, String>> CLASS_EXTRACT_FUNCTIONS;
-    private final static List<Function<String, String>> FIELD_EXTRACT_FUNCTIONS;
-
-    static {
-        Function<String, String> seeClassExtract = (String text) -> {
-            Matcher matcher = SEE_CLASS.matcher(text);
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
-            return null;
-        };
-
-        Function<String, String> linkClassExtract = (String text) -> {
-            Matcher matcher = LINK_CLASS.matcher(text);
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
-            return null;
-        };
-
-        CLASS_EXTRACT_FUNCTIONS = Arrays.asList(seeClassExtract, linkClassExtract);
-
-        FIELD_EXTRACT_FUNCTIONS = Arrays.asList(
-                (String text) -> {
-                    Matcher matcher = SEE_CLASS.matcher(text);
-                    if (matcher.find()) {
-                        return matcher.group(2);
-                    }
-                    return null;
-                },
-                (String text) -> {
-                    Matcher matcher = SEE_CLASS.matcher(text);
-                    if (matcher.find()) {
-                        return matcher.group(2);
-                    }
-                    return null;
-                });
-
-    }
-
+    public final static Pattern SEE_OR_LINK_TAG = Pattern.compile("([a-zA-Z_$][a-zA-Z\\d_$]*)#?"
+            + "([a-zA-Z_$][a-zA-Z\\d_$]*)?");
 
     /**
      * 去除字符串首尾出现的某个字符.
@@ -150,24 +111,6 @@ public class DesUtil {
     }
 
     /**
-     * 获得属性注释
-     *
-     * @param psiDocComment the psi doc comment
-     * @return the filed desc
-     */
-    public static String getFiledDesc(PsiDocComment psiDocComment) {
-        if (Objects.nonNull(psiDocComment)) {
-            String fileText = psiDocComment.getText();
-            if (!Strings.isNullOrEmpty(fileText)) {
-                return trimFirstAndLastChar(
-                        fileText.replace("*", "").replace("/", "").replace(" ", "").replace("\n", ",")
-                                .replace("\t", ""), ',');
-            }
-        }
-        return "";
-    }
-
-    /**
      * 获得引用url
      *
      * @param text the text
@@ -207,71 +150,151 @@ public class DesUtil {
     /**
      * 获得link 备注
      *
-     * @param remark the remark
      * @param project the project
      * @param field the field
      * @return the link remark
      */
-    public static String getLinkOrSeeRemark(String remark, Project project, PsiField field) {
-        // 尝试获得@link 的常量定义
+    public static String getLinkOrSeeRemark(Project project, PsiField field) {
         if (Objects.isNull(field.getDocComment())) {
-            return remark;
+            return getEnumDesc(project, field, field.getType().getCanonicalText());
         }
 
-        String docText = field.getDocComment().getText();
-        Optional<String> classNameOpt = CLASS_EXTRACT_FUNCTIONS.stream().map(function -> function.apply(docText))
-                .filter(Objects::nonNull)
-                .findFirst();
+        String desc = getDesc(field);
 
-        if (classNameOpt.isPresent()) {
-            String string = getString(project, field, classNameOpt.get());
-            return remark.replaceAll("(\\{@link.*?})|(@see.*?" + classNameOpt.get() + "#?.*)?", "") + string;
+        // 尝试获得@link 的常量定义
+        String[] strings = parseLinkOrSee(field);
+
+        if (strings[0] != null) {
+            String string = getEnumDesc(project, field, strings[0]);
+            if (Strings.isNullOrEmpty(desc)) {
+                return string;
+            } else {
+                return desc + "," + string;
+            }
         }
 
-        return remark;
+        return desc;
     }
 
-    private static String getString(Project project, PsiField field, String linkAddress) {
-        String result = "";
+    private static String getEnumDesc(Project project, PsiField field, String linkAddress) {
         PsiClass psiClassLink = getPsiClass(project, field, linkAddress);
 
         if (Objects.nonNull(psiClassLink)) {
-            //说明获得了link 的class
-            List<PsiField> linkFields = Arrays.stream(psiClassLink.getFields()).filter(
-                    psiField -> psiField instanceof PsiEnumConstant).collect(Collectors.toList());
 
-            result += psiClassLink.getName() + "[";
+            // 不是Enum直接返回类注释
+            if (!psiClassLink.isEnum()) {
+                return getDesc(psiClassLink);
+            }
 
-            AtomicInteger ordinal = new AtomicInteger();
-            result = result + linkFields.stream().map(psiField -> {
-
-                StringBuilder sb = new StringBuilder();
-                sb.append(psiField.getName()).append("(");
-                PsiExpressionList argumentList = ((PsiEnumConstantImpl) psiField).getArgumentList();
-                boolean hasArguments = argumentList != null;
-                if (hasArguments) {
-                    PsiExpression[] expressions = Objects
-                            .requireNonNull(((PsiEnumConstantImpl) psiField).getArgumentList())
-                            .getExpressions();
-                    // 先获得名称
-                    sb.append(Arrays.stream(expressions).map(PsiExpression::getText).collect(Collectors.joining(", ")));
-                } else {
-                    if (psiField.getDocComment() != null
-                            || Strings.isNullOrEmpty(psiField.getDocComment().getText())) {
-                        // 使用enum的注释, 或者直接使用名字
-                        sb.append(psiField.getDocComment().getText());
-                    } else {
-                        // 没有注释, 使用ordinal
-                        sb.append(ordinal.get());
-                        ordinal.getAndIncrement();
-                    }
-                }
-                return sb.append(")").toString();
-            }).collect(Collectors.joining(", "));
-
-            result += "]";
+            return getEnumDesc(psiClassLink);
         }
+        return "";
+    }
+
+    @NotNull
+    public static String getEnumDesc(PsiClass psiClassLink) {
+        //说明获得了link 的class
+        List<PsiField> linkFields = Arrays.stream(psiClassLink.getFields()).filter(
+                psiField -> psiField instanceof PsiEnumConstant).collect(Collectors.toList());
+
+        String result = "[";
+
+        AtomicInteger ordinal = new AtomicInteger();
+        result = result + linkFields.stream().map(psiField -> {
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(psiField.getName()).append("(");
+            PsiExpressionList argumentList = ((PsiEnumConstantImpl) psiField).getArgumentList();
+            boolean hasArguments = argumentList != null;
+            if (hasArguments) {
+                PsiExpression[] expressions = Objects
+                        .requireNonNull(((PsiEnumConstantImpl) psiField).getArgumentList())
+                        .getExpressions();
+                // 先获得名称
+                sb.append(Arrays.stream(expressions).map(PsiExpression::getText).collect(Collectors.joining(", ")));
+            } else {
+                if (psiField.getDocComment() != null
+                        || Strings.isNullOrEmpty(psiField.getDocComment().getText())) {
+                    // 使用enum的注释, 或者直接使用名字
+                    sb.append(psiField.getDocComment().getText());
+                } else {
+                    // 没有注释, 使用ordinal
+                    sb.append(ordinal.get());
+                    ordinal.getAndIncrement();
+                }
+            }
+            return sb.append(")").toString();
+        }).collect(Collectors.joining(", "));
+
+        result += "]";
         return result;
+    }
+
+    /**
+     * Class desc string.
+     *
+     * @param project the project
+     * @param psiType the psi type
+     * @return the string
+     */
+    public static String getDesc(Project project, PsiType psiType) {
+
+        if (psiType == null) {
+            return "";
+        }
+
+        PsiClass psiClass = getPsiClass(project, psiType.getCanonicalText());
+
+        if (psiClass.isEnum()) {
+            return getEnumDesc(psiClass);
+        }
+
+        return getDesc(psiClass);
+    }
+
+    /**
+     * Class desc string.
+     *
+     * @param psiClass the psi class
+     * @return the string
+     */
+    public static String getDesc(PsiClass psiClass) {
+
+        if (psiClass == null) {
+            return "";
+        }
+
+        return getDesc(psiClass.getDocComment());
+    }
+
+    /**
+     * Class desc string.
+     *
+     * @param psiField the psi class
+     * @return the string
+     */
+    public static String getDesc(PsiField psiField) {
+        if (psiField == null) {
+            return "";
+        }
+
+        return getDesc(psiField.getDocComment());
+    }
+
+    /**
+     * 获得属性注释
+     *
+     * @param psiDocComment the psi doc comment
+     * @return the filed desc
+     */
+    public static String getDesc(PsiDocComment psiDocComment) {
+
+        if (psiDocComment == null) {
+            return "";
+        }
+
+        return Arrays.stream(psiDocComment.getDescriptionElements()).map(doc -> doc.getText().trim())
+                .filter(doc -> !Strings.isNullOrEmpty(doc)).collect(Collectors.joining(", "));
     }
 
     @Nullable
@@ -300,22 +323,6 @@ public class DesUtil {
     }
 
     /**
-     * Class desc string.
-     *
-     * @param psiClass the psi class
-     * @return the string
-     */
-    public static String classDesc(PsiClass psiClass) {
-        PsiDocComment docComment = psiClass.getDocComment();
-        if (docComment == null) {
-            return "";
-        }
-
-        return Arrays.stream(docComment.getDescriptionElements()).map(doc -> doc.getText().trim())
-                .filter(doc -> !Strings.isNullOrEmpty(doc)).collect(Collectors.joining(", "));
-    }
-
-    /**
      * Enum type string.
      *
      * @param project the project
@@ -337,20 +344,83 @@ public class DesUtil {
             return type;
         }
 
-        Optional<String> enumField = FIELD_EXTRACT_FUNCTIONS.stream().map(function -> function.apply(docComment.getText()))
-                .filter(Objects::nonNull).findFirst();
+        String[] strings = parseLinkOrSee(field);
 
-        if (!enumField.isPresent()) {
+        if (strings[1] == null) {
             return type;
         }
 
+        // 方法
+        for (PsiMethod method : psiClass.getAllMethods()) {
+            if (method.getName().equals(strings[1])) {
+                if (method.getReturnType() != null) {
+                    type = method.getReturnType().getPresentableText();
+                }
+                break;
+            }
+        }
+
         for (PsiField psiField : psiClass.getFields()) {
-            if (!(psiField instanceof PsiEnumConstant) && psiField.getName().equals(enumField.get().substring(1))){
-                return psiField.getType().getCanonicalText();
+            if (!(psiField instanceof PsiEnumConstant) && psiField.getName().equals(strings[1])) {
+                type = psiField.getType().getPresentableText();
+                break;
             }
 
         }
 
-        return type;
+        return BuildJsonForYApi.javaTypeToJsType(type);
+    }
+
+    private static String[] parseLinkOrSee(PsiField psiField) {
+        String[] result = new String[2];
+        Optional<PsiDocTag> psiDocTag = linkOrSeeTag(psiField);
+
+        if (!psiDocTag.isPresent()) {
+            return result;
+        }
+
+        PsiDocTagValue tagValue = psiDocTag.get().getValueElement();
+
+        if (tagValue == null) {
+            return result;
+        }
+
+        Matcher matcher = SEE_OR_LINK_TAG.matcher(tagValue.getText());
+
+        if (!matcher.find()) {
+            return result;
+        }
+
+        for (int i = 0; i < matcher.groupCount(); i++) {
+            result[i] = matcher.group(i + 1);
+        }
+
+        return result;
+    }
+
+    /**
+     * Link or see tag optional.
+     *
+     * @param psiField the psi field
+     * @return the optional
+     */
+    public static Optional<PsiDocTag> linkOrSeeTag(PsiField psiField) {
+        PsiDocComment docComment = psiField.getDocComment();
+        if (docComment == null) {
+            return Optional.empty();
+        }
+        return Arrays.stream(docComment.getTags())
+                .filter(doc -> doc.getName().equals("see") || doc.getName().equals("link")).findFirst();
+    }
+
+    /**
+     * 通过包名前缀获取PsiClass
+     *
+     * @param project the project
+     * @param className the class name
+     * @return the psi class
+     */
+    private static PsiClass getPsiClass(Project project, String className) {
+        return JavaPsiFacade.getInstance(project).findClass(className, GlobalSearchScope.allScope(project));
     }
 }

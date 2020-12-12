@@ -1,5 +1,6 @@
 package com.sky.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -42,16 +43,18 @@ public class YapiApiDTO implements Serializable {
     /**
      * 请求方法
      */
-    private String method = "POST";
+    private String method;
 
     /**
      * 请求 类型 raw,form,json
      */
-    private String req_body_type;
+    @JsonProperty("req_body_type")
+    private String reqBodyType;
     /**
      * 请求form
      */
-    private List<Map<String, String>> req_body_form;
+    @JsonProperty("req_body_form")
+    private List<Map<String, String>> reqBodyForm;
 
     /**
      * 描述
@@ -65,7 +68,8 @@ public class YapiApiDTO implements Serializable {
     /**
      * 请求参数
      */
-    private List<?> req_params;
+    @JsonProperty("req_params")
+    private List<?> reqParams;
 
 
     public String getPath() {
@@ -124,20 +128,20 @@ public class YapiApiDTO implements Serializable {
         this.method = method;
     }
 
-    public String getReq_body_type() {
-        return req_body_type;
+    public String getReqBodyType() {
+        return reqBodyType;
     }
 
-    public void setReq_body_type(String req_body_type) {
-        this.req_body_type = req_body_type;
+    public void setReqBodyType(String reqBodyType) {
+        this.reqBodyType = reqBodyType;
     }
 
-    public List<Map<String, String>> getReq_body_form() {
-        return req_body_form;
+    public List<Map<String, String>> getReqBodyForm() {
+        return reqBodyForm;
     }
 
-    public void setReq_body_form(List<Map<String, String>> req_body_form) {
-        this.req_body_form = req_body_form;
+    public void setReqBodyForm(List<Map<String, String>> reqBodyForm) {
+        this.reqBodyForm = reqBodyForm;
     }
 
     public String getDesc() {
@@ -156,12 +160,12 @@ public class YapiApiDTO implements Serializable {
         this.menu = menu;
     }
 
-    public List<?> getReq_params() {
-        return req_params;
+    public List<?> getReqParams() {
+        return reqParams;
     }
 
-    public void setReq_params(List<?> req_params) {
-        this.req_params = req_params;
+    public void setReqParams(List<?> reqParams) {
+        this.reqParams = reqParams;
     }
 
     @Override
@@ -174,11 +178,11 @@ public class YapiApiDTO implements Serializable {
                 ", response='" + response + '\'' +
                 ", requestBody='" + requestBody + '\'' +
                 ", method='" + method + '\'' +
-                ", req_body_type='" + req_body_type + '\'' +
-                ", req_body_form=" + req_body_form +
+                ", req_body_type='" + reqBodyType + '\'' +
+                ", req_body_form=" + reqBodyForm +
                 ", desc='" + desc + '\'' +
                 ", menu='" + menu + '\'' +
-                ", req_params=" + req_params +
+                ", req_params=" + reqParams +
                 '}';
     }
 }

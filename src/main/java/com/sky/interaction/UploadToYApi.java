@@ -2,18 +2,17 @@ package com.sky.interaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
-import com.google.inject.Injector;
 import com.intellij.notification.NotificationDisplayType;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.psi.PsiFile;
-import com.itangcent.intellij.jvm.PsiClassHelper;
 import com.sky.build.BuildJsonForDubbo;
 import com.sky.build.BuildJsonForYApi;
 import com.sky.config.Config;
@@ -22,6 +21,7 @@ import com.sky.config.PersistentState;
 import com.sky.constant.ProjectTypeConstant;
 import com.sky.constant.YapiConstant;
 import com.sky.dto.YApiSaveParam;
+import com.sky.dto.YApiSaveResponse;
 import com.sky.dto.YapiApiDTO;
 import com.sky.dto.YapiDubboDTO;
 import com.sky.dto.YapiResponse;
@@ -32,7 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Description: UploadToYApi
@@ -54,14 +59,22 @@ public class UploadToYApi extends AnAction {
      */
     private PersistentState persistentState = PersistentState.getInstance();
 
-    public static Injector injector;
-    public static PsiClassHelper psiClassHelper;
+    private final static ThreadPoolExecutor threadPoolExecutor;
 
     static {
         NOTIFICATION_GROUP = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON,
                 true);
+
+        threadPoolExecutor = new ThreadPoolExecutor(5, 5, 5, TimeUnit.MINUTES,
+                new ArrayBlockingQueue<>(10), new ThreadFactory() {
+            @Override
+            public Thread newThread(@NotNull Runnable runnable) {
+                return new Thread(runnable, "yapi_upload_" + Math.random() % 5);
+            }
+        });
     }
 
+    @SuppressWarnings("MissingRecentApi")
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
         Editor editor = anActionEvent.getDataContext().getData(CommonDataKeys.EDITOR);
@@ -102,12 +115,13 @@ public class UploadToYApi extends AnAction {
             NotifyUtil.log(NOTIFICATION_GROUP, project, "please check config, [projectType]", NotificationType.ERROR);
         }
 
-        // 判断项目类型
-        if (ProjectTypeConstant.dubbo.equals(configEntity.getProjectType())) {
-            this.dubboApiUpload(anActionEvent, project, configEntity);
-        } else if (ProjectTypeConstant.api.equals(configEntity.getProjectType())) {
-            this.webApiUpload(anActionEvent, project, configEntity);
-        }
+        ApplicationManager.getApplication().runReadAction(() -> {
+            if (ProjectTypeConstant.dubbo.equals(configEntity.getProjectType())) {
+                dubboApiUpload(anActionEvent, project, configEntity);
+            } else if (ProjectTypeConstant.api.equals(configEntity.getProjectType())) {
+                webApiUpload(anActionEvent, project, configEntity);
+            }
+        });
     }
 
 
@@ -130,9 +144,9 @@ public class UploadToYApi extends AnAction {
                         yapiApiDTO.getMethod(),
                         yapiApiDTO.getDesc(),
                         yapiApiDTO.getHeader());
-                yapiSaveParam.setReq_body_form(yapiApiDTO.getReq_body_form());
-                yapiSaveParam.setReq_body_type(yapiApiDTO.getReq_body_type());
-                yapiSaveParam.setReq_params(yapiApiDTO.getReq_params());
+                yapiSaveParam.setReq_body_form(yapiApiDTO.getReqBodyForm());
+                yapiSaveParam.setReq_body_type(yapiApiDTO.getReqBodyType());
+                yapiSaveParam.setReq_params(yapiApiDTO.getReqParams());
                 yapiSaveParam.setReq_body_is_json_schema(configEntity.isReqBodyIsJsonSchema());
                 yapiSaveParam.setRes_body_is_json_schema(configEntity.isResBodyIsJsonSchema());
                 if (!Strings.isNullOrEmpty(yapiApiDTO.getMenu())) {
@@ -142,7 +156,7 @@ public class UploadToYApi extends AnAction {
                 }
                 try {
                     // 上传
-                    YapiResponse<?> yapiResponse = new UploadYapi()
+                    YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
                             .uploadSave(yapiSaveParam, configEntity.getCookies());
                     if (yapiResponse.getErrcode() != 0) {
                         NotifyUtil.log(NOTIFICATION_GROUP, project,
@@ -215,6 +229,7 @@ public class UploadToYApi extends AnAction {
      * @param project the project
      * @return the config entity
      */
+    @SuppressWarnings("MissingRecentApi")
     private ConfigEntity getConfigEntity(AnActionEvent anActionEvent, Project project) throws JsonProcessingException {
         ConfigEntity configEntity = null;
         // 获取配置

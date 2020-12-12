@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import com.intellij.notification.NotificationType;
 import com.sky.constant.YapiConstant;
 import com.sky.dto.YApiSaveParam;
+import com.sky.dto.YApiSaveResponse;
 import com.sky.dto.YapiCatMenuParam;
 import com.sky.dto.YapiCatResponse;
 import com.sky.dto.YapiHeaderDTO;
@@ -52,7 +53,7 @@ public class UploadYapi {
      * @author gangyf chengsheng@qbb6.com
      * @since: 2019/5/15
      */
-    public YapiResponse<?> uploadSave(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
+    public YapiResponse<List<YApiSaveResponse>> uploadSave(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
         if (Strings.isNullOrEmpty(yapiSaveParam.getTitle())) {
             yapiSaveParam.setTitle(yapiSaveParam.getPath());
         }
@@ -86,10 +87,10 @@ public class UploadYapi {
             String response = HttpClientUtil.ObjectToString(httpclient.execute(
                     getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiSave,
                             OBJECT_MAPPER.writeValueAsString(yapiSaveParam))), "utf-8");
-            return OBJECT_MAPPER.readValue(response, YapiResponse.class);
-        } else {
-            return yapiCatId;
+            return OBJECT_MAPPER.readValue(response, new TypeReference<YapiResponse<List<YApiSaveResponse>>>() {});
         }
+
+        throw new RuntimeException("创建分类失败: " + yapiSaveParam.getMenu());
     }
 
 
@@ -150,13 +151,13 @@ public class UploadYapi {
      */
     public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
 
-            YapiResponse<Integer> yapiResponse = findFromExist(yapiSaveParam, cookies);
+        YapiResponse<Integer> yapiResponse = findFromExist(yapiSaveParam, cookies);
 
-            if (yapiResponse != null) {
-                return yapiResponse;
-            }
+        if (yapiResponse != null) {
+            return yapiResponse;
+        }
 
-            return createCatMenu(yapiSaveParam, cookies);
+        return createCatMenu(yapiSaveParam, cookies);
     }
 
     @Nullable
@@ -193,7 +194,8 @@ public class UploadYapi {
             NotifyUtil.log(NOTIFICATION_GROUP, project,
                     "yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode(),
                     NotificationType.ERROR);
-            throw new RuntimeException("yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode());
+            throw new RuntimeException(
+                    "yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode());
         }
         return null;
     }

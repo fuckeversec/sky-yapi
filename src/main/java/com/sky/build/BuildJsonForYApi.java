@@ -46,6 +46,7 @@ import com.sky.util.RequestMethodUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,6 +83,7 @@ public class BuildJsonForYApi {
      * @param attachUpload the attach upload
      * @return array list
      */
+    @SuppressWarnings("MissingRecentApi")
     public ArrayList<YapiApiDTO> actionPerformedList(AnActionEvent anActionEvent, String attachUpload) {
         Editor editor = anActionEvent.getDataContext().getData(CommonDataKeys.EDITOR);
         PsiFile psiFile = anActionEvent.getDataContext().getData(CommonDataKeys.PSI_FILE);
@@ -94,9 +96,10 @@ public class BuildJsonForYApi {
         assert psiFile != null;
         PsiClass selectedClass = PsiTreeUtil
                 .getContextOfType(psiFile.findElementAt(editor.getCaretModel().getOffset()), PsiClass.class);
-        String classMenu = DesUtil.classDesc(selectedClass);
+        String classMenu = DesUtil.getDesc(selectedClass);
         ArrayList<YapiApiDTO> yApiApiDTOs = new ArrayList<>();
         // 如果没有选择方法, 则按照选择类进行处理
+        assert selectedClass != null;
         if (Objects.equals(selectedClass.getName(), selectedText) || Objects.isNull(selectedText)) {
             // 选择的是类名，则处理当前类中所有public方法
             return processingSelectedClass(attachUpload, project, selectedClass, classMenu, yApiApiDTOs);
@@ -104,19 +107,6 @@ public class BuildJsonForYApi {
             // 选择的是方法 则处理此方法
             return processingSelectedMethod(attachUpload, selectedText, project, selectedClass, classMenu, yApiApiDTOs);
         }
-    }
-
-    /**
-     * 从class中获取注释信息, 作为menu, 去除author等tag信息
-     * 多个空格的转换为一个空格, 去除头尾空格
-     *
-     * @param selectedClass the selected class
-     * @return the string
-     */
-    private String extractMenuForController(PsiClass selectedClass) {
-        int inParent = selectedClass.getDocComment().getTags()[0].getStartOffsetInParent();
-        return selectedClass.getText().substring(0, inParent).replaceAll("[/*]", "").trim()
-                .replaceAll("\\s+", " ");
     }
 
     /**
@@ -192,7 +182,7 @@ public class BuildJsonForYApi {
      * @param attachUpload the attach upload
      * @return the yapi api dto
      */
-    private YapiApiDTO actionPerformed(PsiClass selectedClass, PsiMethod psiMethodTarget, Project project,
+    protected YapiApiDTO actionPerformed(PsiClass selectedClass, PsiMethod psiMethodTarget, Project project,
             String attachUpload) {
         YapiApiDTO yapiApiDTO = new YapiApiDTO();
         // 获得路径
@@ -203,9 +193,9 @@ public class BuildJsonForYApi {
                 .findAnnotation(selectedClass, SpringMVCConstant.RequestMapping);
         if (psiAnnotation != null) {
             PsiNameValuePair[] psiNameValuePairs = psiAnnotation.getParameterList().getAttributes();
-            if (psiNameValuePairs.length > 0) {
-                if (psiNameValuePairs[0].getLiteralValue() != null) {
-                    path.append(psiNameValuePairs[0].getLiteralValue());
+            Arrays.stream(psiNameValuePairs).forEach(psiNameValuePair -> {
+                if (psiNameValuePair.getLiteralValue() != null) {
+                    path.append(psiNameValuePair.getLiteralValue());
                 } else {
                     PsiAnnotationMemberValue psiAnnotationMemberValue = psiAnnotation.findAttributeValue("value");
                     if (Objects.nonNull(psiAnnotationMemberValue) && Objects
@@ -215,7 +205,7 @@ public class BuildJsonForYApi {
                         path.append(results[results.length - 1].split(";")[0].replace("\"", "").trim());
                     }
                 }
-            }
+            });
             path.append("/");
         }
 
@@ -523,8 +513,7 @@ public class BuildJsonForYApi {
                             } else {
                                 yapiQueryDTO.setName(psiParameter.getName());
                                 // 通过方法注释获得 描述 加上 类型
-                                yapiQueryDTO.setDesc(DesUtil.getParamDesc(psiMethodTarget, psiParameter.getName()) + "("
-                                        + psiParameter.getType().getPresentableText() + ")");
+                                yapiQueryDTO.setDesc(DesUtil.getDesc(project, psiParameter.getType()));
                             }
                             if (NormalTypes.NORMAL_TYPES.containsKey(psiParameter.getType().getPresentableText())) {
                                 if (yapiHeaderDTO != null) {
@@ -588,19 +577,19 @@ public class BuildJsonForYApi {
                         }
                     } else {
                         // 支持实体对象接收
-                        yapiApiDTO.setReq_body_type("form");
-                        if (yapiApiDTO.getReq_body_form() != null) {
-                            yapiApiDTO.getReq_body_form()
+                        yapiApiDTO.setReqBodyType("form");
+                        if (yapiApiDTO.getReqBodyForm() != null) {
+                            yapiApiDTO.getReqBodyForm()
                                     .addAll(getRequestForm(project, psiParameter, psiMethodTarget));
                         } else {
-                            yapiApiDTO.setReq_body_form(getRequestForm(project, psiParameter, psiMethodTarget));
+                            yapiApiDTO.setReqBodyForm(getRequestForm(project, psiParameter, psiMethodTarget));
                         }
                     }
                 }
             }
             yapiApiDTO.setParams(list);
             yapiApiDTO.setHeader(yapiHeaderDTOList);
-            yapiApiDTO.setReq_params(yapiPathVariableDTOList);
+            yapiApiDTO.setReqParams(yapiPathVariableDTOList);
         }
     }
 
@@ -633,8 +622,7 @@ public class BuildJsonForYApi {
                 Map<String, String> map = new HashMap<>();
                 map.put("name", field.getName());
                 map.put("type", "text");
-                String remark = DesUtil.getFiledDesc(field.getDocComment());
-                remark = DesUtil.getLinkOrSeeRemark(remark, project, field);
+                String remark = DesUtil.getLinkOrSeeRemark(project, field);
                 map.put("desc", remark);
                 if (Objects.nonNull(field.getType().getPresentableText())) {
                     Object obj = NormalTypes.NORMAL_TYPES.get(field.getType().getPresentableText());
@@ -785,7 +773,11 @@ public class BuildJsonForYApi {
                 result.set("type", "object");
                 result.set("required", requiredList);
                 result.set("title", psiType.getPresentableText());
-                result.set("description", (psiType.getPresentableText() + " :" + psiClassChild.getName()).trim());
+                if (psiClassChild.isEnum()) {
+                    result.set("description", DesUtil.getEnumDesc(psiClassChild));
+                } else {
+                    result.set("description", (psiType.getPresentableText() + " :" + psiClassChild.getName()).trim());
+                }
                 result.set("properties", kvObject);
                 String json = result.toPrettyJson();
                 return json;
@@ -847,12 +839,7 @@ public class BuildJsonForYApi {
         }
         PsiType type = field.getType();
         String name = field.getName();
-        String remark = "";
-        if (field.getDocComment() != null) {
-            remark = DesUtil.getFiledDesc(field.getDocComment());
-            //获得link 备注
-            remark = DesUtil.getLinkOrSeeRemark(remark, project, field);
-        }
+        String remark = DesUtil.getLinkOrSeeRemark(project, field);
         // 如果是基本类型
         if (type instanceof PsiPrimitiveType) {
             ObjectNode objectNode = JsonUtil.OBJECT_MAPPER.createObjectNode();

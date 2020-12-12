@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.jetbrains.annotations.NonNls;
 
 /**
@@ -21,6 +22,8 @@ public class NormalTypes {
 
     @NonNls
     public static final Map<String, Object> NORMAL_TYPES = new HashMap<>();
+
+    public static final Map<String, String> WRAPPER_TO_PRIMITIVE = new HashMap<>();
 
     public static final Map<String, Object> NORMAL_TYPES_PACKAGES = new HashMap<>();
 
@@ -78,6 +81,9 @@ public class NormalTypes {
         NORMAL_TYPES_PACKAGES.put("java.lang.Long", 1L);
         NORMAL_TYPES_PACKAGES.put("java.lang.Float", 1L);
         NORMAL_TYPES_PACKAGES.put("java.lang.Double", 1.0D);
+        NORMAL_TYPES_PACKAGES.put("java.time.LocalDate", "2020-10-11");
+        NORMAL_TYPES_PACKAGES.put("java.time.LocalTime", "12:42:59");
+        NORMAL_TYPES_PACKAGES.put("java.time.LocalDateTime", "2020-10-11 12:42:59");
         NORMAL_TYPES_PACKAGES.put("java.sql.Timestamp", new Timestamp(System.currentTimeMillis()));
         NORMAL_TYPES_PACKAGES.put("java.util.Date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         NORMAL_TYPES_PACKAGES.put("java.lang.String", "String");
@@ -88,6 +94,17 @@ public class NormalTypes {
         COLLECT_TYPES_PACKAGES.put("java.util.Map", "Map");
     }
 
+    static {
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Boolean", "boolean");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Byte", "int");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Short", "int");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Integer", "int");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Long", "int");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Float", "float");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.Double", "double");
+        WRAPPER_TO_PRIMITIVE.put("java.lang.String", "string");
+        WRAPPER_TO_PRIMITIVE.put("java.math.BigDecimal", "double");
+    }
 
     public static boolean isNormalType(String typeName) {
         return NORMAL_TYPES.containsKey(typeName);
