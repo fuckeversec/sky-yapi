@@ -9,11 +9,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.intellij.notification.NotificationType;
 import com.sky.constant.YapiConstant;
+import com.sky.dto.ValueWrapper;
 import com.sky.dto.YApiSaveParam;
 import com.sky.dto.YApiSaveResponse;
 import com.sky.dto.YapiCatMenuParam;
 import com.sky.dto.YapiCatResponse;
-import com.sky.dto.YapiHeaderDTO;
 import com.sky.dto.YapiResponse;
 import com.sky.util.HttpClientUtil;
 import com.sky.util.NotifyUtil;
@@ -57,7 +57,7 @@ public class UploadYapi {
         if (Strings.isNullOrEmpty(yapiSaveParam.getTitle())) {
             yapiSaveParam.setTitle(yapiSaveParam.getPath());
         }
-        YapiHeaderDTO yapiHeaderDTO = new YapiHeaderDTO();
+        ValueWrapper yapiHeaderDTO = new ValueWrapper();
         if ("form".equals(yapiSaveParam.getReq_body_type())) {
             yapiHeaderDTO.setName("Content-Type");
             yapiHeaderDTO.setValue("application/x-www-form-urlencoded");

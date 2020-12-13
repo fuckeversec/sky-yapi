@@ -21,7 +21,7 @@ public class NormalTypes {
     public static final Map<String, Object> COLLECT_TYPES = new HashMap<>();
 
     @NonNls
-    public static final Map<String, Object> NORMAL_TYPES = new HashMap<>();
+    public static final Map<String, String> NORMAL_TYPES = new HashMap<>();
 
     public static final Map<String, String> WRAPPER_TO_PRIMITIVE = new HashMap<>();
 
@@ -35,28 +35,30 @@ public class NormalTypes {
     public static final List<String> GENERIC_LIST = new ArrayList<>();
 
     static {
-        NORMAL_TYPES.put("int", 1);
-        NORMAL_TYPES.put("boolean", false);
-        NORMAL_TYPES.put("byte", 1);
-        NORMAL_TYPES.put("short", 1);
-        NORMAL_TYPES.put("long", 1L);
-        NORMAL_TYPES.put("float", 1.0F);
-        NORMAL_TYPES.put("double", 1.0D);
-        NORMAL_TYPES.put("char", 'a');
-        NORMAL_TYPES.put("Boolean", false);
-        NORMAL_TYPES.put("Byte", 0);
-        NORMAL_TYPES.put("Short", (short) 0);
-        NORMAL_TYPES.put("Integer", 0);
-        NORMAL_TYPES.put("Long", 0L);
-        NORMAL_TYPES.put("Float", 0.0F);
-        NORMAL_TYPES.put("Double", 0.0D);
+        NORMAL_TYPES.put("int", "1");
+        NORMAL_TYPES.put("boolean", "false");
+        NORMAL_TYPES.put("byte", "1");
+        NORMAL_TYPES.put("short", "1");
+        NORMAL_TYPES.put("long", "1L");
+        NORMAL_TYPES.put("float", "1.0F");
+        NORMAL_TYPES.put("double", "1.0D");
+        NORMAL_TYPES.put("char", "a");
+        NORMAL_TYPES.put("Boolean", "false");
+        NORMAL_TYPES.put("Byte", "0");
+        NORMAL_TYPES.put("Short", "0");
+        NORMAL_TYPES.put("Integer", "0");
+        NORMAL_TYPES.put("Long", "0L");
+        NORMAL_TYPES.put("Float", "0.0F");
+        NORMAL_TYPES.put("Double", "0.0D");
         NORMAL_TYPES.put("String", "String");
-        NORMAL_TYPES.put("Date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        NORMAL_TYPES.put("BigDecimal", 0.111111);
-        NORMAL_TYPES.put("Timestamp", new Timestamp(System.currentTimeMillis()));
+        NORMAL_TYPES.put("Date", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()).toString());
+        NORMAL_TYPES.put("BigDecimal", "0.111111");
+        NORMAL_TYPES.put("Timestamp", new Timestamp(System.currentTimeMillis()).toString());
+
         COLLECT_TYPES.put("HashMap", "HashMap");
         COLLECT_TYPES.put("Map", "Map");
         COLLECT_TYPES.put("LinkedHashMap", "LinkedHashMap");
+
         GENERIC_LIST.add("T");
         GENERIC_LIST.add("E");
         GENERIC_LIST.add("A");

@@ -1,162 +1,244 @@
 package com.sky.build.domain;
 
+import static com.sky.build.BuildJsonForYApi.getRequestForm;
+import static com.sky.build.BuildJsonForYApi.getResponse;
+import static com.sky.constant.JavaConstant.HttpServletRequest;
+import static com.sky.constant.JavaConstant.HttpServletResponse;
+
+import com.google.common.base.Strings;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiNameValuePair;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.impl.source.tree.java.PsiArrayInitializerMemberValueImpl;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
-import com.sky.build.JsonApiParser;
+import com.sky.build.AbstractJsonApiParser;
+import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
+import com.sky.dto.ValueWrapper;
 import com.sky.dto.YapiApiDTO;
+import com.sky.util.DesUtil;
 import com.sky.util.PsiAnnotationSearchUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author gangyf
  * @since 2020/12/11 10:33 PM
  */
-public class JsonApiParserImpl implements JsonApiParser {
-
-    public static final String HTTP_METHOD_KEY = "method";
-    private final static Map<String, String> SPECIFY_MAPPING;
-    private final static List<String> MAPPING_TO_HTTP_METHOD;
-    public static final String HTTP_REQUEST_PATH_KEY = "value";
-
-    public static final Map<String, String> REQUEST_METHOD;
-
-    static {
-        SPECIFY_MAPPING = new HashMap<>();
-        MAPPING_TO_HTTP_METHOD = new ArrayList<>();
-
-        MAPPING_TO_HTTP_METHOD.add(SpringMVCConstant.GetMapping);
-        MAPPING_TO_HTTP_METHOD.add(SpringMVCConstant.PostMapping);
-        MAPPING_TO_HTTP_METHOD.add(SpringMVCConstant.PutMapping);
-        MAPPING_TO_HTTP_METHOD.add(SpringMVCConstant.PatchMapping);
-        MAPPING_TO_HTTP_METHOD.add(SpringMVCConstant.DeleteMapping);
-        MAPPING_TO_HTTP_METHOD.add(SpringMVCConstant.RequestMapping);
-
-        SPECIFY_MAPPING.put(SpringMVCConstant.GetMapping, "GET");
-        SPECIFY_MAPPING.put(SpringMVCConstant.PostMapping, "POST");
-        SPECIFY_MAPPING.put(SpringMVCConstant.PutMapping, "PUT");
-        SPECIFY_MAPPING.put(SpringMVCConstant.DeleteMapping, "DELETE");
-        SPECIFY_MAPPING.put(SpringMVCConstant.PatchMapping, "PATCH");
-
-        REQUEST_METHOD = new HashMap<>();
-        REQUEST_METHOD.put("GET", "GET");
-        REQUEST_METHOD.put("HEAD", "HEAD");
-        REQUEST_METHOD.put("POST", "POST");
-        REQUEST_METHOD.put("PUT", "PUT");
-        REQUEST_METHOD.put("DELETE", "DELETE");
-        REQUEST_METHOD.put("TRACE", "TRACE");
-        REQUEST_METHOD.put("OPTIONS", "OPTIONS");
-        REQUEST_METHOD.put("RequestMethod.GET", "GET");
-        REQUEST_METHOD.put("RequestMethod.HEAD", "HEAD");
-        REQUEST_METHOD.put("RequestMethod.POST", "POST");
-        REQUEST_METHOD.put("RequestMethod.PUT", "PUT");
-        REQUEST_METHOD.put("RequestMethod.DELETE", "DELETE");
-        REQUEST_METHOD.put("RequestMethod.TRACE", "TRACE");
-        REQUEST_METHOD.put("RequestMethod.OPTIONS", "OPTIONS");
-    }
+public class JsonApiParserImpl extends AbstractJsonApiParser {
 
     @Override
-    public YapiApiDTO requestPath(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
+    public void requestPath(PsiModifierList psiModifierList, YapiApiDTO yapiApiDTO) {
 
         StringBuilder path = new StringBuilder();
 
-        PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil
-                .findAnnotation(Objects.requireNonNull(psiMethod.getContainingClass()),
-                        SpringMVCConstant.RequestMapping);
+        classRequestPath(path, PsiAnnotationSearchUtil
+                .findAnnotation(PARSE_CONTEXT_THREAD_LOCAL.get().getPsiClass(), SpringMVCConstant.RequestMapping));
 
-        classRequestPath(path, psiAnnotation);
+        Arrays.stream(psiModifierList.getAnnotations())
+                .filter(annotation -> MAPPING_TO_HTTP_METHOD.containsKey(annotation.getQualifiedName()))
+                .findFirst().ifPresent(psiAnnotation -> {
 
-        MAPPING_TO_HTTP_METHOD.stream()
-                .map(mapping -> PsiAnnotationSearchUtil.findAnnotation(psiMethod, mapping))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .ifPresent(annotation -> {
+            PsiAnnotationMemberValue attributeValue = psiAnnotation
+                    .findAttributeValue(HTTP_REQUEST_PATH_KEY);
 
-                    PsiAnnotationMemberValue attributeValue = annotation.findAttributeValue(HTTP_REQUEST_PATH_KEY);
+            if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
+                String multiPath = Arrays
+                        .stream(((PsiArrayInitializerMemberValueImpl) attributeValue).getInitializers())
+                        .filter(element -> element instanceof PsiLiteralExpressionImpl)
+                        .map(element -> (PsiLiteralExpressionImpl) element)
+                        .map(PsiLiteralExpressionImpl::getValue)
+                        .filter(Objects::nonNull)
+                        .map(Object::toString)
+                        // append each element path to class path
+                        .map(elementPath -> path.toString() + elementPath)
+                        .collect(Collectors.joining(", "));
 
-                    if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
-                        String multiPath = Arrays
-                                .stream(((PsiArrayInitializerMemberValueImpl) attributeValue).getInitializers())
-                                .filter(element -> element instanceof PsiLiteralExpressionImpl)
-                                .map(element -> (PsiLiteralExpressionImpl) element)
-                                .map(PsiLiteralExpressionImpl::getValue)
-                                .filter(Objects::nonNull)
-                                .map(Object::toString)
-                                // append each element path to class path
-                                .map(elementPath -> path.toString() + elementPath)
-                                .collect(Collectors.joining(", "));
+                // reset path value, already has class path prefix
+                path.delete(0, path.length());
+                path.append(multiPath);
+            } else if (attributeValue instanceof PsiLiteralExpressionImpl) {
+                path.append(((PsiLiteralExpressionImpl) attributeValue).getValue());
+            }
 
-                        // reset path value, already has class path prefix
-                        path.delete(0, path.length());
-                        path.append(multiPath);
-                    } else if (attributeValue instanceof PsiLiteralExpressionImpl) {
-                        path.append(((PsiLiteralExpressionImpl) attributeValue).getValue());
-                    }
-                });
-
-        // replace multi(/) to one(/)
-        yapiApiDTO.setPath(path.toString().replaceAll("(?<!https?:)/{2,}", "/"));
-
-        return yapiApiDTO;
+            // replace multi(/) to one(/)
+            yapiApiDTO.setPath(path.toString().replaceAll("(?<!https?:)/{2,}", "/"));
+        });
     }
 
     @Override
-    public YapiApiDTO requestMethod(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
-        Optional<PsiAnnotation> specifyMapping = SPECIFY_MAPPING.keySet().stream()
-                .map(mapping -> PsiAnnotationSearchUtil.findAnnotation(psiMethod, mapping))
-                .filter(Objects::nonNull)
-                .findFirst();
+    public void requestMethod(PsiModifierList psiModifierList, YapiApiDTO yapiApiDTO) {
 
-        // use GetMapping or PostMapping...
-        if (specifyMapping.isPresent()) {
-            yapiApiDTO.setMethod(specifyMapping.get().getQualifiedName());
-            return yapiApiDTO;
-        }
+        for (PsiAnnotation psiAnnotation : psiModifierList.getAnnotations()) {
 
-        PsiAnnotation annotation = PsiAnnotationSearchUtil
-                .findAnnotation(psiMethod, SpringMVCConstant.RequestMapping);
+            String qualifiedName = psiAnnotation.getQualifiedName();
 
-        if (annotation != null) {
-            PsiAnnotationMemberValue attributeValue = annotation.findAttributeValue(HTTP_METHOD_KEY);
+            if (MAPPING_TO_HTTP_METHOD.containsKey(qualifiedName)) {
+                String method = MAPPING_TO_HTTP_METHOD.get(qualifiedName);
+                boolean isRequestMapping = method == null;
 
-            if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
-                String multiMethod =
-                        Arrays.stream(((PsiArrayInitializerMemberValueImpl) attributeValue).getInitializers())
-                                .filter(element -> element instanceof PsiReferenceExpressionImpl)
-                                .map(element -> (PsiReferenceExpressionImpl) element)
-                                .map(PsiReferenceExpressionImpl::getCanonicalText)
-                                .map(REQUEST_METHOD::get)
-                                .collect(Collectors.joining(", "));
+                if (isRequestMapping) {
+                    PsiAnnotationMemberValue attributeValue = psiAnnotation
+                            .findAttributeValue(HTTP_METHOD_KEY);
 
-                yapiApiDTO.setMethod(multiMethod);
-            } else if (attributeValue instanceof PsiReferenceExpressionImpl) {
-                yapiApiDTO.setMethod(
-                        REQUEST_METHOD.get(((PsiReferenceExpressionImpl) attributeValue).getCanonicalText()));
+                    if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
+                        String multiMethod =
+                                Arrays.stream(((PsiArrayInitializerMemberValueImpl) attributeValue)
+                                        .getInitializers())
+                                        .filter(element -> element instanceof PsiReferenceExpressionImpl)
+                                        .map(element -> (PsiReferenceExpressionImpl) element)
+                                        .map(PsiReferenceExpressionImpl::getCanonicalText)
+                                        .map(REQUEST_METHOD::get)
+                                        .collect(Collectors.joining(", "));
+
+                        yapiApiDTO.setMethod(multiMethod);
+                    } else if (attributeValue instanceof PsiReferenceExpressionImpl) {
+                        yapiApiDTO.setMethod(REQUEST_METHOD
+                                .get(((PsiReferenceExpressionImpl) attributeValue).getCanonicalText()));
+                    }
+                }
+
+                return;
             }
         }
 
-        if (yapiApiDTO.getMethod() == null) {
-            yapiApiDTO.setMethod("");
-        }
-
-        return yapiApiDTO;
     }
 
     @Override
-    public YapiApiDTO requestDesc(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
-        return null;
+    public void requestDesc(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
+        String classDesc = psiMethod.getText()
+                .replace(Objects.nonNull(psiMethod.getBody()) ? psiMethod.getBody().getText() : "", "");
+
+        if (!Strings.isNullOrEmpty(classDesc)) {
+            classDesc = classDesc.replace("<", "&lt;").replace(">", "&gt;");
+        }
+
+        yapiApiDTO.setDesc("<pre><code>  " + classDesc + "</code> </pre>");
+
+    }
+
+    @Override
+    public void requestTitle(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
+
+        yapiApiDTO.setDesc(DesUtil.getDesc(psiMethod));
+    }
+
+    @Override
+    public void parseRequest(PsiParameterList parameterList, YapiApiDTO yapiApiDTO) {
+
+        PsiParameter[] psiParameters = parameterList.getParameters();
+
+        if (psiParameters.length == 0) {
+            return;
+        }
+
+        List<ValueWrapper> yapiHeaderDTOList = new ArrayList<>();
+        ArrayList<ValueWrapper> yapiQueryDTOList = new ArrayList<>();
+        List<ValueWrapper> yapiPathVariableDTOList = new ArrayList<>();
+
+        final PsiMethod psiMethod = PARSE_CONTEXT_THREAD_LOCAL.get().getPsiMethod();
+
+        Arrays.stream(psiParameters)
+                .filter(psiParameter -> !HttpServletRequest.equals(psiParameter.getType().getCanonicalText()))
+                .filter(psiParameter -> !HttpServletResponse.equals(psiParameter.getType().getCanonicalText()))
+                .forEach(psiParameter -> {
+
+                    Project project = PARSE_CONTEXT_THREAD_LOCAL.get().getProject();
+
+                    psiParameter.acceptChildren(new PsiElementVisitor() {
+                        @Override
+                        public void visitElement(@NotNull PsiElement element) {
+                            super.visitElement(element);
+
+                            if (!(element instanceof PsiModifierList)) {
+                                return;
+                            }
+
+                            PsiModifierList modifierList = (PsiModifierList) element;
+
+                            PsiAnnotation[] annotations = modifierList.getAnnotations();
+
+                            if (annotations.length == 0) {
+                                // 支持实体对象接收
+                                yapiApiDTO.setReqBodyType("form");
+                                if (yapiApiDTO.getReqBodyForm() != null) {
+                                    yapiApiDTO.getReqBodyForm()
+                                            .addAll(getRequestForm(project, psiParameter, psiMethod));
+                                } else {
+                                    yapiApiDTO.setReqBodyForm(getRequestForm(project, psiParameter, psiMethod));
+                                }
+                                return;
+                            }
+
+                            Arrays.stream(annotations).forEach(annotation -> {
+                                String qualifiedName = annotation.getQualifiedName();
+
+                                ValueWrapper yapiHeaderDTO = null;
+                                ValueWrapper yapiPathVariableDTO = null;
+
+                                switch (Objects.requireNonNull(qualifiedName)) {
+                                    case "RequestBody":
+                                    case SpringMVCConstant.RequestBody:
+                                        yapiApiDTO.setRequestBody(getResponse(project, psiParameter.getType()));
+                                        yapiApiDTO.setReqBodyType("application/json;charset=UTF-8");
+                                        break;
+                                    case "RequestParam":
+                                    case SpringMVCConstant.RequestParam:
+                                        ValueWrapper yapiQueryDTO = SpringMvcAnnotationUtil
+                                                .parseRequestParam(annotation, psiParameter, psiMethod);
+                                        yapiQueryDTOList.add(yapiQueryDTO);
+
+                                    case "RequestAttribute":
+                                    case SpringMVCConstant.RequestAttribute:
+                                        break;
+                                    case "RequestHeader":
+                                    case SpringMVCConstant.RequestHeader:
+                                        yapiHeaderDTO = new ValueWrapper();
+                                        break;
+                                    case "PathVariable":
+                                    case SpringMVCConstant.PathVariable:
+                                        yapiPathVariableDTO = new ValueWrapper();
+                                        break;
+                                    default:
+                                        // 支持实体对象接收
+                                        yapiApiDTO.setReqBodyType("form");
+                                        if (yapiApiDTO.getReqBodyForm() != null) {
+                                            yapiApiDTO.getReqBodyForm()
+                                                    .addAll(getRequestForm(project, psiParameter,
+                                                            psiMethod));
+                                        } else {
+                                            yapiApiDTO.setReqBodyForm(getRequestForm(project, psiParameter,
+                                                    psiMethod));
+                                        }
+                                        break;
+                                }
+                            });
+
+                        }
+                    });
+
+                    yapiApiDTO.setParams(yapiQueryDTOList);
+                    yapiApiDTO.setHeader(yapiHeaderDTOList);
+                    yapiApiDTO.setReqParams(yapiPathVariableDTOList);
+
+                });
+    }
+
+    @Override
+    public void parseResponse(Project project, PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
+        yapiApiDTO.setResponse(getResponse(project, psiMethod.getReturnType()));
     }
 
     private void classRequestPath(StringBuilder path, PsiAnnotation psiAnnotation) {
@@ -181,13 +263,4 @@ public class JsonApiParserImpl implements JsonApiParser {
         }
     }
 
-    @Override
-    public YapiApiDTO parseRequest(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
-        return null;
-    }
-
-    @Override
-    public YapiApiDTO parseResponse(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
-        return null;
-    }
 }

@@ -1,13 +1,16 @@
 package com.sky.build;
 
-import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiParameterList;
 import com.sky.dto.YapiApiDTO;
 
 /**
+ * The interface Json api parser.
  *
  * @author gangyf
- * @since 2020/12/11 9:02 PM
+ * @since 2020 /12/11 9:02 PM
  */
 public interface JsonApiParser {
 
@@ -18,7 +21,7 @@ public interface JsonApiParser {
      * @param yapiApiDTO the yapi api dto
      * @return the yapi api dto
      */
-    YapiApiDTO requestPath(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
+    void requestPath(PsiModifierList psiMethod, YapiApiDTO yapiApiDTO);
 
     /**
      * Request method yapi api dto.
@@ -27,7 +30,7 @@ public interface JsonApiParser {
      * @param yapiApiDTO the yapi api dto
      * @return the yapi api dto
      */
-    YapiApiDTO requestMethod(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
+    void requestMethod(PsiModifierList psiMethod, YapiApiDTO yapiApiDTO);
 
     /**
      * Request desc yapi api dto.
@@ -36,24 +39,33 @@ public interface JsonApiParser {
      * @param yapiApiDTO the yapi api dto
      * @return the yapi api dto
      */
-    YapiApiDTO requestDesc(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
+    void requestDesc(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
+
+    /**
+     * Request title.
+     *
+     * @param psiMethod the psi method
+     * @param yapiApiDTO the yapi api dto
+     */
+    void requestTitle(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
 
     /**
      * Parse request yapi api dto.
      *
-     * @param psiMethod the psi method
+     * @param parameterList the parameter list
      * @param yapiApiDTO the yapi api dto
      * @return the yapi api dto
      */
-    YapiApiDTO parseRequest(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
+    void parseRequest(PsiParameterList parameterList, YapiApiDTO yapiApiDTO);
 
     /**
      * Parse response yapi api dto.
      *
+     * @param project the project
      * @param psiMethod the psi method
      * @param yapiApiDTO the yapi api dto
      * @return the yapi api dto
      */
-    YapiApiDTO parseResponse(PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
+    void parseResponse(Project project, PsiMethod psiMethod, YapiApiDTO yapiApiDTO);
 
 }

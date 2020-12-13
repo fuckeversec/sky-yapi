@@ -32,10 +32,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.sky.constant.JavaConstant;
 import com.sky.constant.SpringMVCConstant;
+import com.sky.dto.ValueWrapper;
 import com.sky.dto.YapiApiDTO;
-import com.sky.dto.YapiHeaderDTO;
-import com.sky.dto.YapiPathVariableDTO;
-import com.sky.dto.YapiQueryDTO;
 import com.sky.upload.UploadYapi;
 import com.sky.util.DesUtil;
 import com.sky.util.FileToZipUtil;
@@ -394,9 +392,9 @@ public class BuildJsonForYApi {
     public static void getRequest(Project project, YapiApiDTO yapiApiDTO, PsiMethod psiMethodTarget) {
         PsiParameter[] psiParameters = psiMethodTarget.getParameterList().getParameters();
         if (psiParameters.length > 0) {
-            ArrayList list = new ArrayList<YapiQueryDTO>();
-            List<YapiHeaderDTO> yapiHeaderDTOList = new ArrayList<>();
-            List<YapiPathVariableDTO> yapiPathVariableDTOList = new ArrayList<>();
+            ArrayList<ValueWrapper> list = new ArrayList<>();
+            List<ValueWrapper> yapiHeaderDTOList = new ArrayList<>();
+            List<ValueWrapper> yapiPathVariableDTOList = new ArrayList<>();
             for (PsiParameter psiParameter : psiParameters) {
                 if (JavaConstant.HttpServletRequest.equals(psiParameter.getType().getCanonicalText())
                         || JavaConstant.HttpServletResponse.equals(psiParameter.getType().getCanonicalText())) {
@@ -409,8 +407,8 @@ public class BuildJsonForYApi {
                 } else {
                     psiAnnotation = PsiAnnotationSearchUtil
                             .findAnnotation(psiParameter, SpringMVCConstant.RequestParam);
-                    YapiHeaderDTO yapiHeaderDTO = null;
-                    YapiPathVariableDTO yapiPathVariableDTO = null;
+                    ValueWrapper yapiHeaderDTO = null;
+                    ValueWrapper yapiPathVariableDTO = null;
                     if (psiAnnotation == null) {
                         psiAnnotation = PsiAnnotationSearchUtil
                                 .findAnnotation(psiParameter, SpringMVCConstant.RequestAttribute);
@@ -420,15 +418,15 @@ public class BuildJsonForYApi {
                             if (psiAnnotation == null) {
                                 psiAnnotation = PsiAnnotationSearchUtil
                                         .findAnnotation(psiParameter, SpringMVCConstant.PathVariable);
-                                yapiPathVariableDTO = new YapiPathVariableDTO();
+                                yapiPathVariableDTO = new ValueWrapper();
                             } else {
-                                yapiHeaderDTO = new YapiHeaderDTO();
+                                yapiHeaderDTO = new ValueWrapper();
                             }
                         }
                     }
                     if (psiAnnotation != null) {
                         PsiNameValuePair[] psiNameValuePairs = psiAnnotation.getParameterList().getAttributes();
-                        YapiQueryDTO yapiQueryDTO = new YapiQueryDTO();
+                        ValueWrapper yapiQueryDTO = new ValueWrapper();
 
                         if (psiNameValuePairs.length > 0) {
                             for (PsiNameValuePair psiNameValuePair : psiNameValuePairs) {
@@ -645,11 +643,6 @@ public class BuildJsonForYApi {
      * @since: 2019/2/19
      */
     public static String getResponse(Project project, PsiType psiType) {
-        return getPojoJson(project, psiType);
-    }
-
-
-    public static String getPojoJson(Project project, PsiType psiType) {
         if (psiType instanceof PsiPrimitiveType) {
             //如果是基本类型
             KV kvClass = KV.create();

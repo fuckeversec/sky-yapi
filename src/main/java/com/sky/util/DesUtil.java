@@ -4,19 +4,21 @@ import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiEnumConstant;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiEnumConstantImpl;
+import com.intellij.psi.impl.source.javadoc.PsiDocParamRef;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.javadoc.PsiDocTagValue;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.sky.build.BuildJsonForYApi;
-import com.sky.build.NormalTypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +37,7 @@ public class DesUtil {
 
     public final static Pattern SEE_OR_LINK_TAG = Pattern.compile("([a-zA-Z_$][a-zA-Z\\d_$]*)#?"
             + "([a-zA-Z_$][a-zA-Z\\d_$]*)?");
+    public static final String PARAM_TAG = "param";
 
     /**
      * 去除字符串首尾出现的某个字符.
@@ -282,6 +285,23 @@ public class DesUtil {
     }
 
     /**
+     * Gets desc.
+     *
+     * @param psiMethod the psi method
+     * @return the desc
+     */
+    public static String getDesc(PsiMethod psiMethod) {
+
+        PsiDocComment docComment = psiMethod.getDocComment();
+        if (docComment == null) {
+            return "";
+        }
+
+        return getDesc(docComment);
+
+    }
+
+    /**
      * 获得属性注释
      *
      * @param psiDocComment the psi doc comment
@@ -422,5 +442,38 @@ public class DesUtil {
      */
     private static PsiClass getPsiClass(Project project, String className) {
         return JavaPsiFacade.getInstance(project).findClass(className, GlobalSearchScope.allScope(project));
+    }
+
+    /**
+     * 获取方法参数的描述信息
+     * 1. 方法没有注释, 返回PsiType的PresentableText做为描述
+     * 2. 存在注释, 使用param信息作为描述
+     *
+     * @param psiMethod the psi method
+     * @param psiParameter the psi parameter
+     * @return the string
+     */
+    public static String paramDesc(PsiMethod psiMethod, PsiParameter psiParameter) {
+
+        if (psiMethod.getDocComment() == null) {
+            return psiParameter.getType().getPresentableText();
+        }
+
+        String paramName = psiParameter.getName();
+
+        StringBuilder desc = new StringBuilder();
+        Arrays.stream(psiMethod.getDocComment().getTags())
+                .filter(tag -> tag.getName().equals(PARAM_TAG))
+                .filter(tag -> Objects.nonNull(tag.getValueElement()))
+                .filter(tag -> tag.getValueElement().getText().equals(paramName))
+                .findFirst()
+                .ifPresent(tag -> desc.append(Arrays.stream(tag.getDataElements())
+                        // first element is refer to param name, ignore
+                        .filter(element -> !(element instanceof PsiDocParamRef))
+                        .map(PsiElement::getText)
+                        .filter(s -> !Strings.isNullOrEmpty(s.trim()))
+                        .collect(Collectors.joining(", "))));
+
+        return desc.toString();
     }
 }
