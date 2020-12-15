@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * kv
  *
- * @author chengsheng@qbb6.com
+ * @author gangyf
  * @since 2018/10/27
  */
 @SuppressWarnings("unchecked")
@@ -16,15 +16,15 @@ public class KV<K, V> extends LinkedHashMap<K, V> {
     public <K, V> KV() {
     }
 
-    public static <K, V> KV by(K key, V value) {
-        return new KV().set(key, value);
+    public static <K, V> KV<K, V> by(K key, V value) {
+        return new KV<K, V>().set(key, value);
     }
 
-    public static <K, V> KV create() {
-        return new KV();
+    public static <K, V> KV<K, V> create() {
+        return new KV<K, V>();
     }
 
-    public KV set(K key, V value) {
+    public KV<K, V> set(K key, V value) {
         super.put(key, value);
         return this;
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -33,9 +34,9 @@ import org.apache.http.impl.cookie.BasicClientCookie;
  */
 public class HttpClientGenerator {
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-    private PoolingHttpClientConnectionManager connectionManager;
+    private final PoolingHttpClientConnectionManager connectionManager;
 
     public HttpClientGenerator() {
 
@@ -51,15 +52,6 @@ public class HttpClientGenerator {
         connectionManager = new PoolingHttpClientConnectionManager(reg);
         connectionManager.setMaxTotal(3);
         connectionManager.setDefaultMaxPerRoute(3);
-    }
-
-    private SSLConnectionSocketFactory buildSSLConnectionSocketFactory() {
-        try {
-            // 优先绕过安全证书
-            return new SSLConnectionSocketFactory(createIgnoreVerifySSL());
-        } catch (KeyManagementException | NoSuchAlgorithmException ignored) {
-        }
-        return SSLConnectionSocketFactory.getSocketFactory();
     }
 
     private SSLContext createIgnoreVerifySSL()
@@ -88,9 +80,13 @@ public class HttpClientGenerator {
         return ctx;
     }
 
-    public HttpClientGenerator setPoolSize(int poolSize) {
-        connectionManager.setMaxTotal(poolSize);
-        return this;
+    private SSLConnectionSocketFactory buildSSLConnectionSocketFactory() {
+        try {
+            // 优先绕过安全证书
+            return new SSLConnectionSocketFactory(createIgnoreVerifySSL());
+        } catch (KeyManagementException | NoSuchAlgorithmException ignored) {
+        }
+        return SSLConnectionSocketFactory.getSocketFactory();
     }
 
     public CloseableHttpClient getClient(Site site) {
@@ -107,7 +103,7 @@ public class HttpClientGenerator {
 
         SocketConfig.Builder socketConfigBuilder = SocketConfig.custom();
         socketConfigBuilder.setSoKeepAlive(true).setTcpNoDelay(true);
-        socketConfigBuilder.setSoTimeout(3000);
+        socketConfigBuilder.setSoTimeout(500);
         SocketConfig socketConfig = socketConfigBuilder.build();
         httpClientBuilder.setDefaultSocketConfig(socketConfig);
         connectionManager.setDefaultSocketConfig(socketConfig);
@@ -118,8 +114,11 @@ public class HttpClientGenerator {
     }
 
     private void generateCookie(HttpClientBuilder httpClientBuilder, String cookies) {
+        if (Strings.isNullOrEmpty(cookies)) {
+            return;
+        }
+
         CookieStore cookieStore = new BasicCookieStore();
-        // TODO
         for (Cookie cookie : parseCookies(cookies)) {
 
             BasicClientCookie basicClientCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
@@ -130,11 +129,9 @@ public class HttpClientGenerator {
     }
 
     private List<Cookie> parseCookies(String cookies) {
-        // TODO
         try {
             return objectMapper.readValue(cookies, new TypeReference<List<Cookie>>() {});
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        } catch (JsonProcessingException ignored) {
         }
         return new ArrayList<>();
     }

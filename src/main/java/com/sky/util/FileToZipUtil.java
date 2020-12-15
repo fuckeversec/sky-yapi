@@ -13,7 +13,7 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * @description: 文件压缩
- * @author gangyf chengsheng@qbb6.com
+ * @author gangyf
  * @since: 2019/5/15
  */
 public class FileToZipUtil {

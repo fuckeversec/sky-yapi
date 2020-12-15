@@ -18,6 +18,7 @@ import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.javadoc.PsiDocTagValue;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiUtil;
 import com.sky.build.BuildJsonForYApi;
 import java.util.Arrays;
 import java.util.List;
@@ -253,6 +254,22 @@ public class DesUtil {
         }
 
         return getDesc(psiClass);
+    }
+
+    /**
+     * Gets desc.
+     *
+     * @param psiType the psi type
+     * @return the desc
+     */
+    public static Optional<String> getDesc(PsiType psiType) {
+        PsiClass psiClass = PsiUtil.resolveClassInType(psiType);
+
+        String desc = getDesc(psiClass);
+        if (Strings.isNullOrEmpty(desc)) {
+            return Optional.empty();
+        }
+        return Optional.of(desc);
     }
 
     /**

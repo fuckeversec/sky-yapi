@@ -50,41 +50,44 @@ public class UploadYapi {
      * @description: 调用保存接口
      * @param: [yapiSaveParam, attachUpload, path]
      * @return: com.qbb.dto.YapiResponse
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/5/15
      */
-    public YapiResponse<List<YApiSaveResponse>> uploadSave(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
+    public YapiResponse<List<YApiSaveResponse>> uploadSave(YApiSaveParam yapiSaveParam, String cookies)
+            throws IOException {
+
         if (Strings.isNullOrEmpty(yapiSaveParam.getTitle())) {
             yapiSaveParam.setTitle(yapiSaveParam.getPath());
         }
         ValueWrapper yapiHeaderDTO = new ValueWrapper();
-        if ("form".equals(yapiSaveParam.getReq_body_type())) {
+        if ("form".equals(yapiSaveParam.getReqBodyType())) {
             yapiHeaderDTO.setName("Content-Type");
             yapiHeaderDTO.setValue("application/x-www-form-urlencoded");
-            yapiSaveParam.setReq_body_form(yapiSaveParam.getReq_body_form());
+            yapiSaveParam.setReqBodyForm(yapiSaveParam.getReqBodyForm());
         } else {
             yapiHeaderDTO.setName("Content-Type");
             yapiHeaderDTO.setValue("application/json");
-            yapiSaveParam.setReq_body_type("json");
+            yapiSaveParam.setReqBodyType("json");
         }
-        if (Objects.isNull(yapiSaveParam.getReq_headers())) {
-            List<Object> list = new ArrayList<>();
+
+        if (Objects.isNull(yapiSaveParam.getReqHeaders())) {
+            List<ValueWrapper> list = new ArrayList<>();
             list.add(yapiHeaderDTO);
-            yapiSaveParam.setReq_headers(list);
+            yapiSaveParam.setReqHeaders(list);
         } else {
-            yapiSaveParam.getReq_headers().add(yapiHeaderDTO);
+            yapiSaveParam.getReqHeaders().add(yapiHeaderDTO);
         }
 
         YapiResponse<Integer> yapiCatId = getCatIdOrCreate(yapiSaveParam, cookies);
 
         if (yapiCatId.getErrcode() == 0 && yapiCatId.getData() != null) {
-            yapiSaveParam.setCatid(yapiCatId.getData().toString());
+            yapiSaveParam.setCatId(yapiCatId.getData().toString());
             CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(cookies);
             if (!Strings.isNullOrEmpty(cookies)) {
                 // 使用cookie时, token置空
                 yapiSaveParam.setToken(null);
             }
-            String response = HttpClientUtil.ObjectToString(httpclient.execute(
+            String response = HttpClientUtil.objectToString(httpclient.execute(
                     getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiSave,
                             OBJECT_MAPPER.writeValueAsString(yapiSaveParam))), "utf-8");
             return OBJECT_MAPPER.readValue(response, new TypeReference<YapiResponse<List<YApiSaveResponse>>>() {});
@@ -106,7 +109,7 @@ public class UploadYapi {
             httpPost.setHeader("Content-type", "application/json;charset=utf-8");
             HttpEntity reqEntity = new StringEntity(body == null ? "" : body, "UTF-8");
             httpPost.setEntity(reqEntity);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return httpPost;
     }
@@ -115,7 +118,7 @@ public class UploadYapi {
      * @description: 上传文件
      * @param: [url, filePath]
      * @return: java.lang.String
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/5/15
      */
     public String uploadFile(String url, String filePath) {
@@ -125,7 +128,7 @@ public class UploadYapi {
             FileBody bin = new FileBody(new File(filePath));
             HttpEntity reqEntity = MultipartEntityBuilder.create().addPart("file", bin).build();
             httpPost.setEntity(reqEntity);
-            return HttpClientUtil.ObjectToString(HttpClientUtil.getHttpclient().execute(httpPost), "utf-8");
+            return HttpClientUtil.objectToString(HttpClientUtil.getHttpclient().execute(httpPost), "utf-8");
         } catch (Exception e) {
         }
         return "";
@@ -143,11 +146,12 @@ public class UploadYapi {
 
 
     /**
-     * @description: 获得分类或者创建分类或者
-     * @param: [yapiSaveParam]
-     * @return: com.qbb.dto.YapiResponse
-     * @author gangyf chengsheng@qbb6.com
-     * @since: 2019/5/15
+     * 获得分类或者创建分类或者
+     *
+     * @param yapiSaveParam the yapi save param
+     * @param cookies the cookies
+     * @return the cat id or create
+     * @throws IOException the io exception
      */
     public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
 
@@ -170,7 +174,7 @@ public class UploadYapi {
                 YapiConstant.yapiCatMenu, yapiSaveParam.getProjectId(), yapiSaveParam.getToken());
 
         response = HttpClientUtil
-                .ObjectToString(httpclient.execute(getHttpGet(catListUrl)), "utf-8");
+                .objectToString(httpclient.execute(getHttpGet(catListUrl)), "utf-8");
 
         YapiResponse<List<YapiCatResponse>> yapiResponse = OBJECT_MAPPER.readValue(response,
                 new TypeReference<YapiResponse<List<YapiCatResponse>>>() {});
@@ -216,7 +220,7 @@ public class UploadYapi {
 
         String createCatUrl = yapiSaveParam.getYapiUrl() + YapiConstant.yapiAddCat;
 
-        String responseCat = HttpClientUtil.ObjectToString(
+        String responseCat = HttpClientUtil.objectToString(
                 httpclient.execute(
                         getHttpPost(createCatUrl, OBJECT_MAPPER.writeValueAsString(createCatMenuParam))),
                 "utf-8");
@@ -228,6 +232,12 @@ public class UploadYapi {
         return new YapiResponse<>(yapiResponse.getData().getId());
     }
 
+    /**
+     * Cache cat response.
+     *
+     * @param yapiSaveParam the yapi save param
+     * @param catResponse the cat response
+     */
     @NotNull
     private void cacheCatResponse(YApiSaveParam yapiSaveParam, YapiCatResponse catResponse) {
 

@@ -1,5 +1,6 @@
 package com.sky.api.rpc.response;
 
+import java.sql.JDBCType;
 import com.sky.api.enums.GenderEnum;
 import java.io.Serializable;
 import lombok.Builder;
@@ -25,5 +26,7 @@ public class UserResponse implements Serializable {
      * @see GenderEnum#getValue()
      */
     private GenderEnum gender;
+
+    private JDBCType jdbcType;
 
 }

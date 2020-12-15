@@ -45,17 +45,18 @@ public abstract class AbstractApiExport implements ApiExport {
         SelectedContext.builder().selectedText(selectedText).selectedPsiClass(selectedClass).build();
 
         assert selectedClass != null;
+
+        // 选中类, 或者不选中, 解析当前指针所在的类
         if (Objects.equals(selectedClass.getName(), selectedText) || Objects.isNull(selectedText)) {
-            // 选择的是类名，则处理当前类中所有public方法
             return nonPrivateMethods(selectedClass);
         } else {
             // 选择的是方法 则处理此方法
-            Optional<PsiMethod> selectedMehtod = nonPrivateMethods(selectedClass).stream()
+            Optional<PsiMethod> selectedMethod = nonPrivateMethods(selectedClass).stream()
                     .filter(method -> method.getName().equals(selectedText))
                     .findAny();
 
-            if (selectedMehtod.isPresent()) {
-                return Collections.singletonList(selectedMehtod.get());
+            if (selectedMethod.isPresent()) {
+                return Collections.singletonList(selectedMethod.get());
             }
 
         }

@@ -386,7 +386,7 @@ public class BuildJsonForYApi {
      * @description: 获得请求参数
      * @param: [project, yapiApiDTO, psiMethodTarget]
      * @return: void
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/2/19
      */
     public static void getRequest(Project project, YapiApiDTO yapiApiDTO, PsiMethod psiMethodTarget) {
@@ -595,7 +595,7 @@ public class BuildJsonForYApi {
      * @description: 获得表单提交数据对象
      * @param: [requestClass]
      * @return: java.util.List<java.util.Map < java.lang.String, java.lang.String>>
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/5/17
      */
     public static List<Map<String, String>> getRequestForm(Project project, PsiParameter psiParameter,
@@ -639,21 +639,25 @@ public class BuildJsonForYApi {
      * @description: 获得响应参数
      * @param: [project, psiType]
      * @return: java.lang.String
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/2/19
      */
     public static String getResponse(Project project, PsiType psiType) {
+
         if (psiType instanceof PsiPrimitiveType) {
             //如果是基本类型
-            KV kvClass = KV.create();
+            KV<String, Object> kvClass = KV.create();
             kvClass.set(psiType.getCanonicalText(), NormalTypes.NORMAL_TYPES.get(psiType.getPresentableText()));
+            return kvClass.toString();
         } else if (NormalTypes.isNormalType(psiType.getPresentableText())) {
             //如果是包装类型
-            KV kvClass = KV.create();
+            KV<String, Object> kvClass = KV.create();
             kvClass.set(psiType.getCanonicalText(), NormalTypes.NORMAL_TYPES.get(psiType.getPresentableText()));
+
+            return kvClass.toString();
         } else if (psiType.getPresentableText().startsWith("List")) {
             String[] types = psiType.getCanonicalText().split("<");
-            KV listKv = new KV();
+            KV<String, Object> listKv = new KV<>();
             if (types.length > 1) {
                 String childPackage = types[1].split(">")[0];
                 if (NormalTypes.NORMAL_TYPES_PACKAGES.keySet().contains(childPackage)) {
@@ -675,13 +679,12 @@ public class BuildJsonForYApi {
                     listKv.set("required", requiredList);
                 }
             }
-            KV result = new KV();
+            KV<String, Object> result = new KV<>();
             result.set("type", "array");
             result.set("title", psiType.getPresentableText());
             result.set("description", psiType.getPresentableText());
             result.set("items", listKv);
-            String json = result.toPrettyJson();
-            return json;
+            return result.toPrettyJson();
         } else if (psiType.getPresentableText().startsWith("Set")) {
             String[] types = psiType.getCanonicalText().split("<");
             KV listKv = new KV();
@@ -772,8 +775,7 @@ public class BuildJsonForYApi {
                     result.set("description", (psiType.getPresentableText() + " :" + psiClassChild.getName()).trim());
                 }
                 result.set("properties", kvObject);
-                String json = result.toPrettyJson();
-                return json;
+                return result.toPrettyJson();
             }
         }
         return null;
@@ -783,7 +785,7 @@ public class BuildJsonForYApi {
      * @description: 获得属性列表
      * @param: [psiClass, project, childType, index]
      * @return: com.sky.build.KV
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/5/15
      */
     public static KV getFields(PsiClass psiClass, Project project, String[] childType, Integer index,
@@ -822,7 +824,7 @@ public class BuildJsonForYApi {
      * @description: 获得单个属性
      * @param: [field, project, kv, childType, index, pName]
      * @return: void
-     * @author gangyf chengsheng@qbb6.com
+     * @author gangyf
      * @since: 2019/5/15
      */
     public static void getField(PsiField field, Project project, KV kv, String[] childType, Integer index,

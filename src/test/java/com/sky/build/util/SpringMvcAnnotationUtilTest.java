@@ -1,6 +1,5 @@
 package com.sky.build.util;
 
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.intellij.psi.PsiClass;
@@ -110,5 +109,32 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
         assertThat(valueWrapper.getDesc()).isEqualTo("Long");
     }
 
+    public void testParsePathVariable() {
+        PsiClass userController = psiClassMap.get("UserController");
+
+        PsiMethod psiMethod = getMethodByName(userController, "test9");
+
+        PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
+
+        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parsePathVariable(
+                Objects.requireNonNull(PsiAnnotationSearchUtil
+                        .findAnnotation(parameter, SpringMVCConstant.PathVariable)), parameter, psiMethod);
+
+        assertThat(valueWrapper.getName()).isEqualTo("id");
+    }
+
+    public void testParsePathVariable_specifyName() {
+        PsiClass userController = psiClassMap.get("UserController");
+
+        PsiMethod psiMethod = getMethodByName(userController, "test10");
+
+        PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
+
+        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parsePathVariable(
+                Objects.requireNonNull(PsiAnnotationSearchUtil
+                        .findAnnotation(parameter, SpringMVCConstant.PathVariable)), parameter, psiMethod);
+
+        assertThat(valueWrapper.getName()).isEqualTo("id");
+    }
 
 }

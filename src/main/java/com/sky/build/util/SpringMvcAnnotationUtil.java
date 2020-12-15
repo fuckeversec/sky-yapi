@@ -5,7 +5,6 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.PsiParameter;
-import com.intellij.psi.javadoc.PsiDocTag;
 import com.sky.dto.ValueWrapper;
 import com.sky.util.DesUtil;
 import java.util.Objects;
@@ -15,6 +14,19 @@ import java.util.Objects;
  * @since 2020/12/13 2:29 PM
  */
 public class SpringMvcAnnotationUtil {
+
+    /**
+     * 解析path variable
+     *
+     * @param annotation the annotation
+     * @param psiParameter the psi parameter
+     * @param psiMethod the psi method
+     * @return the value wrapper
+     */
+    public static ValueWrapper parsePathVariable(PsiAnnotation annotation, PsiParameter psiParameter,
+            PsiMethod psiMethod) {
+        return parseRequestParam(annotation, psiParameter, psiMethod);
+    }
 
     /**
      * Parse request param.
@@ -62,7 +74,6 @@ public class SpringMvcAnnotationUtil {
         }
 
         yapiQueryDto.setExample(ExampleValueUtil.psiTypeToExample(psiParameter.getType()));
-
 
         yapiQueryDto.setDesc(DesUtil.paramDesc(psiMethod, psiParameter));
 

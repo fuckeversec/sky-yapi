@@ -2,17 +2,14 @@ package com.sky.util;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 
 /**
- * Description: log util
- * Copyright (c) Department of Research and Development/Beijing
- * All Rights Reserved.
+ * log util
  *
- * @author sky
+ * @author gangyf
  * @version 1.0 2019年06月19日 18:07
  */
 public class NotifyUtil {

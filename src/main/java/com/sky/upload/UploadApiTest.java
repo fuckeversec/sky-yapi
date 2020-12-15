@@ -75,7 +75,7 @@ public class UploadApiTest {
                 + "  }\n"
                 + "}", Config.class);
 
-        Site site = new Site();
+        Site site = Site.builder().build();
         site.setCookies("[\n"
                 + "    {\n"
                 + "        \"domain\": \".kaikeba.com\",\n"
@@ -185,7 +185,7 @@ public class UploadApiTest {
         CloseableHttpClient client = httpClientGenerator.getClient(site);
 
         String response = HttpClientUtil
-                .ObjectToString(client.execute(getHttpPost("http://yapi.kaikeba.com/" + YapiConstant.yapiSave,
+                .objectToString(client.execute(getHttpPost("http://yapi.kaikeba.com/" + YapiConstant.yapiSave,
                         "{\"method\":\"GET\",\"catid\":\"1470\",\"title\":\"lkdfaslkdfjl\",\"path\":\"/lkjopipoij\",\"project_id\":\"1798\"}")),
                         "utf-8");
 

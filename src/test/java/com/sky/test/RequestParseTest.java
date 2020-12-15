@@ -8,7 +8,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.sky.AbstractTestCase;
 import com.sky.build.NormalTypes;
-import com.sky.build.domain.JsonApiParserImpl;
+import com.sky.build.domain.SpringApiParserImpl;
 import com.sky.dto.YapiApiDTO;
 import com.sky.util.DesUtil;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class RequestParseTest extends AbstractTestCase {
 
     public void testRequestPath() {
 
-        JsonApiParserImpl jsonApiParser = new JsonApiParserImpl();
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
 
         PsiClass userController = psiClassMap.get("UserController");
         PARSE_CONTEXT_THREAD_LOCAL.get().setPsiClass(userController);
@@ -85,7 +85,7 @@ public class RequestParseTest extends AbstractTestCase {
 
     public void testRequestPath_multiValue() {
 
-        JsonApiParserImpl jsonApiParser = new JsonApiParserImpl();
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
 
         PsiClass userController = psiClassMap.get("UserController");
         PARSE_CONTEXT_THREAD_LOCAL.get().setPsiClass(userController);
@@ -99,7 +99,7 @@ public class RequestParseTest extends AbstractTestCase {
 
     public void testRequestMethod() {
 
-        JsonApiParserImpl jsonApiParser = new JsonApiParserImpl();
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
 
         PsiClass userController = psiClassMap.get("UserController");
 
@@ -112,7 +112,7 @@ public class RequestParseTest extends AbstractTestCase {
 
     public void testRequestMethod_multi() {
 
-        JsonApiParserImpl jsonApiParser = new JsonApiParserImpl();
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
 
         PsiClass userController = psiClassMap.get("UserController");
 
@@ -131,7 +131,7 @@ public class RequestParseTest extends AbstractTestCase {
 
     @Test
     public void testParseRequest() {
-        JsonApiParserImpl jsonApiParser = new JsonApiParserImpl();
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
 
         PsiClass userController = psiClassMap.get("UserController");
         PsiMethod psiMethod = getMethodByName(userController, "test");
@@ -143,7 +143,7 @@ public class RequestParseTest extends AbstractTestCase {
     }
 
     public void testRequestDesc() {
-        JsonApiParserImpl jsonApiParser = new JsonApiParserImpl();
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
 
         PsiClass userController = psiClassMap.get("UserController");
 

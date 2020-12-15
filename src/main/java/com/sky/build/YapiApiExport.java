@@ -7,6 +7,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
+import com.sky.build.domain.SpringApiParserImpl;
 import com.sky.config.ConfigEntity;
 import com.sky.dto.YApiSaveParam;
 import com.sky.dto.YApiSaveResponse;
@@ -15,7 +16,6 @@ import com.sky.dto.YapiResponse;
 import com.sky.upload.UploadYapi;
 import com.sky.util.NotifyUtil;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -30,49 +30,64 @@ public class YapiApiExport extends AbstractApiExport {
 
         List<PsiMethod> selectedMethods = actionPerform(anActionEvent);
 
-        List<YapiApiDTO> yApiApiDTOS = selectedMethods.stream()
-                .map(method -> new BuildJsonForYApi().actionPerformed(null, method, project, null)).collect(
-                        Collectors.toList());
+        JsonApiParser jsonApiParser = new SpringApiParserImpl();
 
-        if (Objects.nonNull(yApiApiDTOS)) {
-            for (YapiApiDTO yapiApiDTO : yApiApiDTOS) {
-                YApiSaveParam yapiSaveParam = new YApiSaveParam(configEntity.getProjectToken(), yapiApiDTO.getTitle(),
-                        yapiApiDTO.getPath(),
-                        yapiApiDTO.getParams(), yapiApiDTO.getRequestBody(), yapiApiDTO.getResponse(),
-                        configEntity.getProjectId(), configEntity.getyApiUrl(), true,
-                        yapiApiDTO.getMethod(),
-                        yapiApiDTO.getDesc(),
-                        yapiApiDTO.getHeader());
-                yapiSaveParam.setReq_body_form(yapiApiDTO.getReqBodyForm());
-                yapiSaveParam.setReq_body_type(yapiApiDTO.getReqBodyType());
-                yapiSaveParam.setReq_params(yapiApiDTO.getReqParams());
-                yapiSaveParam.setReq_body_is_json_schema(configEntity.isReqBodyIsJsonSchema());
-                yapiSaveParam.setRes_body_is_json_schema(configEntity.isResBodyIsJsonSchema());
-                if (!Strings.isNullOrEmpty(yapiApiDTO.getMenu())) {
-                    yapiSaveParam.setMenu(yapiApiDTO.getMenu());
+        List<YapiApiDTO> yapiApiDTOList = selectedMethods.stream()
+                .map(selectedMethod -> jsonApiParser.parseRequestMethod(project, selectedMethod))
+                .collect(Collectors.toList());
+
+        for (YapiApiDTO yapiApiDTO : yapiApiDTOList) {
+
+            YApiSaveParam yapiSaveParam = YApiSaveParam.builder()
+                    .title(yapiApiDTO.getTitle())
+                    .path(yapiApiDTO.getPath())
+                    // configure
+                    .status(configEntity.getStatus())
+                    .yapiUrl(configEntity.getYApiUrl())
+                    .token(configEntity.getProjectToken())
+                    .projectId(configEntity.getProjectId())
+                    .reqBodyIsJsonSchema(configEntity.isReqBodyIsJsonSchema())
+                    .resBodyIsJsonSchema(configEntity.isResBodyIsJsonSchema())
+                    // request
+                    .reqQuery(yapiApiDTO.getParams())
+                    .reqBodyOther(yapiApiDTO.getRequestBody())
+                    .reqHeaders(yapiApiDTO.getHeader())
+                    .reqBodyForm(yapiApiDTO.getReqBodyForm())
+                    .reqBodyType(yapiApiDTO.getReqBodyType())
+                    .reqParams(yapiApiDTO.getReqParams())
+                    // response
+                    .resBodyType("json")
+                    .resBody(yapiApiDTO.getResponse())
+                    .method(yapiApiDTO.getMethod())
+                    .desc(yapiApiDTO.getDesc())
+                    // default
+                    .message("")
+                    .build();
+
+            if (!Strings.isNullOrEmpty(yapiApiDTO.getMenu())) {
+                yapiSaveParam.setMenu(yapiApiDTO.getMenu());
+            } else {
+                yapiSaveParam.setMenu(configEntity.getMenu());
+            }
+            try {
+                // 上传
+                YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
+                        .uploadSave(yapiSaveParam, configEntity.getCookies());
+                if (yapiResponse.getErrcode() != 0) {
+                    NotifyUtil.log(NOTIFICATION_GROUP, project,
+                            "sorry ,upload api error cause:" + yapiResponse.getErrmsg(), NotificationType.ERROR);
                 } else {
-                    yapiSaveParam.setMenu(configEntity.getMenu());
+                    String url =
+                            configEntity.getYApiUrl() + "/project/" + configEntity.getProjectId() + "/interface"
+                                    + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
+                                    .get(yapiSaveParam.getMenu());
+                    NotifyUtil
+                            .log(NOTIFICATION_GROUP, project, "success ,url:  " + url,
+                                    NotificationType.INFORMATION);
                 }
-                try {
-                    // 上传
-                    YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
-                            .uploadSave(yapiSaveParam, configEntity.getCookies());
-                    if (yapiResponse.getErrcode() != 0) {
-                        NotifyUtil.log(NOTIFICATION_GROUP, project,
-                                "sorry ,upload api error cause:" + yapiResponse.getErrmsg(), NotificationType.ERROR);
-                    } else {
-                        String url =
-                                configEntity.getyApiUrl() + "/project/" + configEntity.getProjectId() + "/interface"
-                                        + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
-                                        .get(yapiSaveParam.getMenu());
-                        NotifyUtil
-                                .log(NOTIFICATION_GROUP, project, "success ,url:  " + url,
-                                        NotificationType.INFORMATION);
-                    }
-                } catch (Exception e) {
-                    NotifyUtil.log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e,
-                            NotificationType.ERROR);
-                }
+            } catch (Exception e) {
+                NotifyUtil.log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e,
+                        NotificationType.ERROR);
             }
         }
 

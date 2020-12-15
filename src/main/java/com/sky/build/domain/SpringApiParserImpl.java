@@ -20,6 +20,8 @@ import com.intellij.psi.impl.source.tree.java.PsiArrayInitializerMemberValueImpl
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.sky.build.AbstractJsonApiParser;
+import com.sky.build.KV;
+import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.ValueWrapper;
@@ -37,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
  * @author gangyf
  * @since 2020/12/11 10:33 PM
  */
-public class JsonApiParserImpl extends AbstractJsonApiParser {
+public class SpringApiParserImpl extends AbstractJsonApiParser {
 
     @Override
     public void requestPath(PsiModifierList psiModifierList, YapiApiDTO yapiApiDTO) {
@@ -51,8 +53,28 @@ public class JsonApiParserImpl extends AbstractJsonApiParser {
                 .filter(annotation -> MAPPING_TO_HTTP_METHOD.containsKey(annotation.getQualifiedName()))
                 .findFirst().ifPresent(psiAnnotation -> {
 
-            PsiAnnotationMemberValue attributeValue = psiAnnotation
-                    .findAttributeValue(HTTP_REQUEST_PATH_KEY);
+            PsiAnnotationMemberValue attributeValue = null;
+            for (PsiNameValuePair attribute : psiAnnotation.getParameterList().getAttributes()) {
+
+                if (attributeValue != null) {
+                    break;
+                }
+
+                if (Strings.isNullOrEmpty(attribute.getName())) {
+                    attributeValue = attribute.getValue();
+                    break;
+                }
+
+                switch (attribute.getName()) {
+                    case HTTP_REQUEST_PATH_PATH:
+                    case HTTP_REQUEST_PATH_VALUE:
+                        attributeValue = attribute.getValue();
+                        break;
+                    default:
+                        break;
+                }
+
+            }
 
             if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
                 String multiPath = Arrays
@@ -83,33 +105,45 @@ public class JsonApiParserImpl extends AbstractJsonApiParser {
 
         for (PsiAnnotation psiAnnotation : psiModifierList.getAnnotations()) {
 
-            String qualifiedName = psiAnnotation.getQualifiedName();
-
-            if (MAPPING_TO_HTTP_METHOD.containsKey(qualifiedName)) {
-                String method = MAPPING_TO_HTTP_METHOD.get(qualifiedName);
-                boolean isRequestMapping = method == null;
-
-                if (isRequestMapping) {
+            String method = null;
+            switch (Objects.requireNonNull(psiAnnotation.getQualifiedName())) {
+                case "GetMapping":
+                case SpringMVCConstant.GetMapping:
+                case "PostMapping":
+                case SpringMVCConstant.PostMapping:
+                case "PutMapping":
+                case SpringMVCConstant.PutMapping:
+                case "PatchMapping":
+                case SpringMVCConstant.PatchMapping:
+                case "DeleteMapping":
+                case SpringMVCConstant.DeleteMapping:
+                    method = MAPPING_TO_HTTP_METHOD.get(psiAnnotation.getQualifiedName());
+                    yapiApiDTO.setMethod(method);
+                    break;
+                case "RequestMapping":
+                case SpringMVCConstant.RequestMapping:
                     PsiAnnotationMemberValue attributeValue = psiAnnotation
                             .findAttributeValue(HTTP_METHOD_KEY);
 
                     if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
-                        String multiMethod =
-                                Arrays.stream(((PsiArrayInitializerMemberValueImpl) attributeValue)
-                                        .getInitializers())
-                                        .filter(element -> element instanceof PsiReferenceExpressionImpl)
-                                        .map(element -> (PsiReferenceExpressionImpl) element)
-                                        .map(PsiReferenceExpressionImpl::getCanonicalText)
-                                        .map(REQUEST_METHOD::get)
-                                        .collect(Collectors.joining(", "));
+                        String multiMethod = Arrays.stream(((PsiArrayInitializerMemberValueImpl) attributeValue)
+                                .getInitializers())
+                                .filter(element -> element instanceof PsiReferenceExpressionImpl)
+                                .map(element -> (PsiReferenceExpressionImpl) element)
+                                .map(PsiReferenceExpressionImpl::getCanonicalText)
+                                .map(REQUEST_METHOD::get)
+                                .collect(Collectors.joining(", "));
 
                         yapiApiDTO.setMethod(multiMethod);
                     } else if (attributeValue instanceof PsiReferenceExpressionImpl) {
                         yapiApiDTO.setMethod(REQUEST_METHOD
                                 .get(((PsiReferenceExpressionImpl) attributeValue).getCanonicalText()));
                     }
-                }
+                default:
+                    break;
+            }
 
+            if (Strings.isNullOrEmpty(method)) {
                 return;
             }
         }
@@ -132,7 +166,7 @@ public class JsonApiParserImpl extends AbstractJsonApiParser {
     @Override
     public void requestTitle(PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
 
-        yapiApiDTO.setDesc(DesUtil.getDesc(psiMethod));
+        yapiApiDTO.setTitle(DesUtil.getDesc(psiMethod));
     }
 
     @Override
@@ -172,21 +206,18 @@ public class JsonApiParserImpl extends AbstractJsonApiParser {
 
                             if (annotations.length == 0) {
                                 // 支持实体对象接收
-                                yapiApiDTO.setReqBodyType("form");
-                                if (yapiApiDTO.getReqBodyForm() != null) {
-                                    yapiApiDTO.getReqBodyForm()
-                                            .addAll(getRequestForm(project, psiParameter, psiMethod));
-                                } else {
-                                    yapiApiDTO.setReqBodyForm(getRequestForm(project, psiParameter, psiMethod));
+                                if (yapiApiDTO.getReqBodyForm() == null) {
+                                    yapiApiDTO.setReqBodyType("form");
+                                    yapiApiDTO.setReqBodyForm(new ArrayList<>());
                                 }
+
+                                yapiApiDTO.getReqBodyForm().addAll(getRequestForm(project, psiParameter,
+                                        psiMethod));
                                 return;
                             }
 
                             Arrays.stream(annotations).forEach(annotation -> {
                                 String qualifiedName = annotation.getQualifiedName();
-
-                                ValueWrapper yapiHeaderDTO = null;
-                                ValueWrapper yapiPathVariableDTO = null;
 
                                 switch (Objects.requireNonNull(qualifiedName)) {
                                     case "RequestBody":
@@ -200,28 +231,28 @@ public class JsonApiParserImpl extends AbstractJsonApiParser {
                                                 .parseRequestParam(annotation, psiParameter, psiMethod);
                                         yapiQueryDTOList.add(yapiQueryDTO);
 
+                                    case "PathVariable":
+                                    case SpringMVCConstant.PathVariable:
+                                        ValueWrapper yapiPathVariableDTO = SpringMvcAnnotationUtil
+                                                .parsePathVariable(annotation, psiParameter, psiMethod);
+                                        yapiPathVariableDTOList.add(yapiPathVariableDTO);
+                                        break;
                                     case "RequestAttribute":
                                     case SpringMVCConstant.RequestAttribute:
                                         break;
                                     case "RequestHeader":
                                     case SpringMVCConstant.RequestHeader:
-                                        yapiHeaderDTO = new ValueWrapper();
-                                        break;
-                                    case "PathVariable":
-                                    case SpringMVCConstant.PathVariable:
-                                        yapiPathVariableDTO = new ValueWrapper();
+                                        ValueWrapper yapiHeaderDTO = new ValueWrapper();
                                         break;
                                     default:
                                         // 支持实体对象接收
-                                        yapiApiDTO.setReqBodyType("form");
-                                        if (yapiApiDTO.getReqBodyForm() != null) {
-                                            yapiApiDTO.getReqBodyForm()
-                                                    .addAll(getRequestForm(project, psiParameter,
-                                                            psiMethod));
-                                        } else {
-                                            yapiApiDTO.setReqBodyForm(getRequestForm(project, psiParameter,
-                                                    psiMethod));
+                                        if (yapiApiDTO.getReqBodyForm() == null) {
+                                            yapiApiDTO.setReqBodyType("form");
+                                            yapiApiDTO.setReqBodyForm(new ArrayList<>());
                                         }
+
+                                        yapiApiDTO.getReqBodyForm()
+                                                .addAll(getRequestForm(project, psiParameter, psiMethod));
                                         break;
                                 }
                             });
@@ -239,28 +270,32 @@ public class JsonApiParserImpl extends AbstractJsonApiParser {
     @Override
     public void parseResponse(Project project, PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
         yapiApiDTO.setResponse(getResponse(project, psiMethod.getReturnType()));
+        // TODO
+        PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
+        KV<String, Object> parse = psiTypeParserChain.parse(psiMethod.getReturnType());
+        System.out.println(parse.toPrettyJson());
     }
 
     private void classRequestPath(StringBuilder path, PsiAnnotation psiAnnotation) {
-        if (psiAnnotation != null) {
-            PsiNameValuePair[] psiNameValuePairs = psiAnnotation.getParameterList().getAttributes();
-            Arrays.stream(psiNameValuePairs).forEach(psiNameValuePair -> {
-                // like RequestMapping("path")
-                if (psiNameValuePair.getLiteralValue() != null) {
-                    path.append(psiNameValuePair.getLiteralValue());
-                } else {
-                    // use value and other parameters
-                    PsiAnnotationMemberValue psiAnnotationMemberValue = psiAnnotation.findAttributeValue("value");
-                    if (Objects.nonNull(psiAnnotationMemberValue) && Objects
-                            .nonNull(psiAnnotationMemberValue.getReference())) {
-                        String[] results = Objects.requireNonNull(psiAnnotationMemberValue.getReference().resolve())
-                                .getText().split("=");
-                        path.append(results[results.length - 1].split(";")[0].replace("\"", "").trim());
-                    }
-                }
-            });
-            path.append("/");
+        if (psiAnnotation == null) {
+            return;
         }
+        Arrays.stream(psiAnnotation.getParameterList().getAttributes()).forEach(psiNameValuePair -> {
+            // like RequestMapping("path")
+            if (psiNameValuePair.getLiteralValue() != null) {
+                path.append(psiNameValuePair.getLiteralValue());
+            } else {
+                // use value and other parameters
+                PsiAnnotationMemberValue psiAnnotationMemberValue = psiAnnotation.findAttributeValue("value");
+                if (Objects.nonNull(psiAnnotationMemberValue) && Objects
+                        .nonNull(psiAnnotationMemberValue.getReference())) {
+                    String[] results = Objects.requireNonNull(psiAnnotationMemberValue.getReference().resolve())
+                            .getText().split("=");
+                    path.append(results[results.length - 1].split(";")[0].replace("\"", "").trim());
+                }
+            }
+        });
+        path.append("/");
     }
 
 }

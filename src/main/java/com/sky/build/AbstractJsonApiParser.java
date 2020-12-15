@@ -24,14 +24,13 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
     public final static ThreadLocal<ParseContext> PARSE_CONTEXT_THREAD_LOCAL = new ThreadLocal<>();
 
     protected final static String HTTP_METHOD_KEY = "method";
-    protected final static Map<String, String> SPECIFY_MAPPING;
     protected final static Map<String, String> MAPPING_TO_HTTP_METHOD;
-    protected final static String HTTP_REQUEST_PATH_KEY = "value";
+    protected final static String HTTP_REQUEST_PATH_PATH = "path";
+    protected final static String HTTP_REQUEST_PATH_VALUE = "value";
 
     protected final static Map<String, String> REQUEST_METHOD;
 
     static {
-        SPECIFY_MAPPING = new HashMap<>(16);
         MAPPING_TO_HTTP_METHOD = new HashMap<>(16);
 
         MAPPING_TO_HTTP_METHOD.put("GetMapping", "GET");
@@ -39,13 +38,11 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
         MAPPING_TO_HTTP_METHOD.put("PutMapping", "PUT");
         MAPPING_TO_HTTP_METHOD.put("PatchMapping", "PATCH");
         MAPPING_TO_HTTP_METHOD.put("DeleteMapping", "DELETE");
-        MAPPING_TO_HTTP_METHOD.put("RequestMapping", null);
-
-        SPECIFY_MAPPING.put(SpringMVCConstant.GetMapping, "GET");
-        SPECIFY_MAPPING.put(SpringMVCConstant.PostMapping, "POST");
-        SPECIFY_MAPPING.put(SpringMVCConstant.PutMapping, "PUT");
-        SPECIFY_MAPPING.put(SpringMVCConstant.DeleteMapping, "DELETE");
-        SPECIFY_MAPPING.put(SpringMVCConstant.PatchMapping, "PATCH");
+        MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.GetMapping, "GET");
+        MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.PostMapping, "POST");
+        MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.PutMapping, "PUT");
+        MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.DeleteMapping, "DELETE");
+        MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.PatchMapping, "PATCH");
 
         REQUEST_METHOD = new HashMap<>();
         REQUEST_METHOD.put("GET", "GET");
@@ -64,13 +61,7 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
         REQUEST_METHOD.put("RequestMethod.OPTIONS", "OPTIONS");
     }
 
-    /**
-     * 模板方法, 调用实现类方法, 填充YapiApiDTO
-     *
-     * @param project the project
-     * @param psiMethod the psi method
-     * @return the yapi api dto
-     */
+    @Override
     public YapiApiDTO parseRequestMethod(Project project, PsiMethod psiMethod) {
 
         YapiApiDTO yapiApiDTO = new YapiApiDTO();

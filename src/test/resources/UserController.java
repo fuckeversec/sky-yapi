@@ -1,5 +1,4 @@
-package com.sky.web.controller;
-
+import java.util.List;
 import com.sky.api.rpc.Response;
 import com.sky.api.rpc.request.UserRequest;
 import com.sky.api.rpc.response.UserResponse;
@@ -68,6 +67,30 @@ public class UserController {
 
     @GetMapping("/test/5/{id}")
     public Response<UserResponse> test8(@RequestParam("fake_name") Long id,
+            @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public Response<UserResponse> test9(@PathVariable Long id,
+            @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public Response<UserResponse> test10(@PathVariable("id") Long id,
+            @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public List<UserResponse> test11(@PathVariable("id") Long id,
+            @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public List test12(@PathVariable("id") Long id,
+            @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public List<UserResponse> test13(@PathVariable("id") Long id,
+            @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public List<String> test14(@PathVariable("id") Long id,
             @RequestParam GenderEnum gender) {}
 
     @GetMapping(value = "/{id}")

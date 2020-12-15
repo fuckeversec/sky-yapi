@@ -15,6 +15,15 @@ import com.sky.dto.YapiApiDTO;
 public interface JsonApiParser {
 
     /**
+     * 模板方法, 调用实现类方法, 填充YapiApiDTO
+     *
+     * @param project the project
+     * @param psiMethod the psi method
+     * @return the yapi api dto
+     */
+    YapiApiDTO parseRequestMethod(Project project, PsiMethod psiMethod);
+
+    /**
      * Request path yapi api dto.
      *
      * @param psiMethod the psi method
