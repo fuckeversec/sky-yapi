@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * @author gangyf
  * @since 2020/12/14 3:53 PM
  */
-public class EnumPsiTypeParser extends PsiTypeParser {
+public class EnumPsiTypeParser extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {

@@ -10,17 +10,17 @@ import com.sky.build.KV;
  * @author gangyf
  * @since 2020 /12/14 8:11 AM
  */
-public abstract class PsiTypeParser {
+public abstract class AbstractPsiTypeParser {
 
     /**
      * 下一个解析器
      */
-    protected PsiTypeParser nextParser;
+    protected AbstractPsiTypeParser nextParser;
 
     /**
      * 所有解析器, 解析到复杂对象时, 调用第一个解析器进行复杂属性
      */
-    protected PsiTypeParser firstPsiTypeParser;
+    protected AbstractPsiTypeParser firstPsiTypeParser;
 
     /**
      * 解析类型
@@ -38,11 +38,11 @@ public abstract class PsiTypeParser {
      */
     abstract void parser(PsiField psiField, KV<String, Object> kv);
 
-    public void setNextParser(PsiTypeParser nextParser) {
+    public void setNextParser(AbstractPsiTypeParser nextParser) {
         this.nextParser = nextParser;
     }
 
-    public void setFirstPsiTypeParser(PsiTypeParser firstPsiTypeParser) {
+    public void setFirstPsiTypeParser(AbstractPsiTypeParser firstPsiTypeParser) {
         this.firstPsiTypeParser = firstPsiTypeParser;
     }
 }

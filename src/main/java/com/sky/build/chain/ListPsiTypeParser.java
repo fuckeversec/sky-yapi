@@ -12,7 +12,7 @@ import com.sky.build.NormalTypes;
  * @author gangyf
  * @since 2020/12/14 8:44 AM
  */
-public class ListPsiTypeParser extends PsiTypeParser {
+public class ListPsiTypeParser extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {

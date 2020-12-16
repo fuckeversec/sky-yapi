@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>sky-yapi</id>
     <name>Sky-Yapi</name>
-    <version>1.0</version>
+    <version>1.11-SNAPSHOT</version>
     <vendor email="gyf314159@gmail.com" url="http://www.google.com">sky</vendor>
 
     <description>
@@ -39,7 +39,7 @@
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="162.426.1"/>
+    <idea-version since-build="182.2371.4"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->

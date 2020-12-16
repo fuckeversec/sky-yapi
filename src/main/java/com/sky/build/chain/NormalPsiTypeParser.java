@@ -13,7 +13,7 @@ import com.sky.util.DesUtil;
  * @author gangyf
  * @since 2020/12/14 8:21 AM
  */
-public class NormalPsiTypeParser extends PsiTypeParser {
+public class NormalPsiTypeParser extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {

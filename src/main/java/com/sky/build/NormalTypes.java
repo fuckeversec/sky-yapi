@@ -200,6 +200,16 @@ public class NormalTypes {
     }
 
     /**
+     * Is generic type boolean.
+     *
+     * @param psiType the psi type
+     * @return the boolean
+     */
+    public static boolean isGenericType(PsiType psiType) {
+        return GENERIC_LIST.contains(psiType.getPresentableText());
+    }
+
+    /**
      * Is collection boolean
      * 判断逻辑:
      * psiType.getCanonicalText以collection中的任何一个为开头

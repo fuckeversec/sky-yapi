@@ -11,13 +11,13 @@ import java.util.List;
  */
 public class PsiTypeParserChain {
 
-    private static PsiTypeParser firstPsiTypeParser;
+    private static AbstractPsiTypeParser firstPsiTypeParser;
 
     static {
 
-        PsiTypeParser previousPsiTypeParser = null;
+        AbstractPsiTypeParser previousPsiTypeParser = null;
 
-        List<PsiTypeParser> psiTypeParsers = Arrays
+        List<AbstractPsiTypeParser> psiTypeParsers = Arrays
                 .asList(new NormalPsiTypeParser(),
                         new EnumPsiTypeParser(),
                         new ListPsiTypeParser(),
@@ -25,7 +25,7 @@ public class PsiTypeParserChain {
 
         firstPsiTypeParser = psiTypeParsers.get(0);
 
-        for (PsiTypeParser psiTypeParser : psiTypeParsers) {
+        for (AbstractPsiTypeParser psiTypeParser : psiTypeParsers) {
             psiTypeParser.setFirstPsiTypeParser(firstPsiTypeParser);
             if (previousPsiTypeParser != null) {
                 previousPsiTypeParser.setNextParser(psiTypeParser);

@@ -9,7 +9,9 @@ import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
 import com.sky.build.NormalTypes;
+import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
  * @author gangyf
  * @since 2020/12/14 3:24 PM
  */
-public class ObjectPsiTypeParse extends PsiTypeParser {
+public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {
@@ -36,26 +38,34 @@ public class ObjectPsiTypeParse extends PsiTypeParser {
 
         List<PsiField> collect = getPsiFields(psiClass);
         KV<String, KV<String, Object>> properties = KV.create();
-        Map<String, PsiType> resolveGeneralTypes = resolveGeneralTypes(psiType, psiClass);
+        Map<String, PsiType> resolvedGeneralTypes = resolveGenericTypes(psiType, psiClass);
+
+        List<String> required = new ArrayList<>();
 
         for (PsiField psiField : collect) {
             KV<String, Object> fieldProperty = KV.create();
             properties.set(psiField.getName(), fieldProperty);
-            // general type, replace to actual type
-            String fieldTypeName = psiField.getType().getPresentableText();
-            if (NormalTypes.GENERIC_LIST.contains(fieldTypeName)
-                    && resolveGeneralTypes.containsKey(fieldTypeName)) {
 
-                PsiType fieldType = resolveGeneralTypes.get(fieldTypeName);
+            // general type, replace to actual type
+            if (genericTypeeHasActualType(resolvedGeneralTypes, psiField)) {
+
+                PsiType fieldType = resolvedGeneralTypes.get(psiField.getType().getPresentableText());
                 firstPsiTypeParser.parser(fieldType, fieldProperty);
                 fieldProperty.set("description", DesUtil.getDesc(psiField));
             } else {
                 firstPsiTypeParser.parser(psiField, fieldProperty);
             }
+
+            // 存在非空注解, 添加到required列表
+            if (RequiredPropertyParse.required(psiField)) {
+                required.add(psiField.getName());
+            }
         }
+
         kv.set("type", "object");
-        kv.set("description", DesUtil.getDesc(psiType).orElse(""));
+        kv.set("required", required);
         kv.set("properties", properties);
+        kv.set("description", DesUtil.getDesc(psiType).orElse(""));
     }
 
     @Override
@@ -89,7 +99,7 @@ public class ObjectPsiTypeParse extends PsiTypeParser {
      * @param psiClass the psi class
      * @return the map
      */
-    private Map<String, PsiType> resolveGeneralTypes(PsiType psiType, PsiClass psiClass) {
+    private Map<String, PsiType> resolveGenericTypes(PsiType psiType, PsiClass psiClass) {
 
         Map<String, PsiType> result = new HashMap<>(8);
         PsiTypeParameter[] typeParameters = psiClass.getTypeParameters();
@@ -108,6 +118,18 @@ public class ObjectPsiTypeParse extends PsiTypeParser {
         }
 
         return result;
+    }
+
+    /**
+     * Generic typee has actual type boolean.
+     *
+     * @param resolvedGeneralTypes the resolved general types
+     * @param psiField the psi field
+     * @return the boolean
+     */
+    private boolean genericTypeeHasActualType(Map<String, PsiType> resolvedGeneralTypes, PsiField psiField) {
+        return NormalTypes.isGenericType(psiField.getType()) &&
+                resolvedGeneralTypes.containsKey(psiField.getType().getPresentableText());
     }
 
 }

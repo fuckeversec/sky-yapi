@@ -20,8 +20,6 @@ import com.intellij.psi.impl.source.tree.java.PsiArrayInitializerMemberValueImpl
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.sky.build.AbstractJsonApiParser;
-import com.sky.build.KV;
-import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.ValueWrapper;
@@ -271,9 +269,9 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
     public void parseResponse(Project project, PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
         yapiApiDTO.setResponse(getResponse(project, psiMethod.getReturnType()));
         // TODO
-        PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
-        KV<String, Object> parse = psiTypeParserChain.parse(psiMethod.getReturnType());
-        System.out.println(parse.toPrettyJson());
+        // PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
+        // KV<String, Object> parse = psiTypeParserChain.parse(psiMethod.getReturnType());
+        // System.out.println(parse.toPrettyJson());
     }
 
     private void classRequestPath(StringBuilder path, PsiAnnotation psiAnnotation) {

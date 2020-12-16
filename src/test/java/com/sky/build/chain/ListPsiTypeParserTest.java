@@ -15,13 +15,13 @@ import org.mockito.Mockito;
 @SuppressWarnings("unchecked")
 public class ListPsiTypeParserTest extends AbstractTestCase {
 
-    private PsiTypeParser firstPsiTypeParser;
+    private AbstractPsiTypeParser firstPsiTypeParser;
     private ListPsiTypeParser listPsiTypeParse;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        firstPsiTypeParser = Mockito.mock(PsiTypeParser.class);
+        firstPsiTypeParser = Mockito.mock(AbstractPsiTypeParser.class);
         listPsiTypeParse = new ListPsiTypeParser();
         listPsiTypeParse.setFirstPsiTypeParser(firstPsiTypeParser);
     }
