@@ -45,7 +45,7 @@ public class YApiSaveParam implements Serializable {
      * 请求参数 form 类型
      */
     @JsonProperty("req_body_form")
-    private List<Map<String, String>> reqBodyForm;
+    private List<Map<String, Object>> reqBodyForm;
 
     /**
      * 标题

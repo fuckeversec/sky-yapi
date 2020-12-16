@@ -56,7 +56,7 @@ public class YapiApiDTO implements Serializable {
      * 请求form
      */
     @JsonProperty("req_body_form")
-    private List<Map<String, String>> reqBodyForm;
+    private List<Map<String, Object>> reqBodyForm;
 
     /**
      * 描述

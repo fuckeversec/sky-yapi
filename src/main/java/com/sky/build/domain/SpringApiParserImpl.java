@@ -1,7 +1,5 @@
 package com.sky.build.domain;
 
-import static com.sky.build.BuildJsonForYApi.getRequestForm;
-import static com.sky.build.BuildJsonForYApi.getResponse;
 import static com.sky.constant.JavaConstant.HttpServletRequest;
 import static com.sky.constant.JavaConstant.HttpServletResponse;
 
@@ -20,6 +18,8 @@ import com.intellij.psi.impl.source.tree.java.PsiArrayInitializerMemberValueImpl
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.sky.build.AbstractJsonApiParser;
+import com.sky.build.KV;
+import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.ValueWrapper;
@@ -180,7 +180,8 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
         ArrayList<ValueWrapper> yapiQueryDTOList = new ArrayList<>();
         List<ValueWrapper> yapiPathVariableDTOList = new ArrayList<>();
 
-        final PsiMethod psiMethod = PARSE_CONTEXT_THREAD_LOCAL.get().getPsiMethod();
+        PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
+        PsiMethod psiMethod = PARSE_CONTEXT_THREAD_LOCAL.get().getPsiMethod();
 
         Arrays.stream(psiParameters)
                 .filter(psiParameter -> !HttpServletRequest.equals(psiParameter.getType().getCanonicalText()))
@@ -209,8 +210,7 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                     yapiApiDTO.setReqBodyForm(new ArrayList<>());
                                 }
 
-                                yapiApiDTO.getReqBodyForm().addAll(getRequestForm(project, psiParameter,
-                                        psiMethod));
+                                yapiApiDTO.getReqBodyForm().addAll(parseRequestForm(psiParameter.getType()));
                                 return;
                             }
 
@@ -220,7 +220,8 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                 switch (Objects.requireNonNull(qualifiedName)) {
                                     case "RequestBody":
                                     case SpringMVCConstant.RequestBody:
-                                        yapiApiDTO.setRequestBody(getResponse(project, psiParameter.getType()));
+                                        KV<String, Object> response = psiTypeParserChain.parse(psiParameter.getType());
+                                        yapiApiDTO.setRequestBody(response.toPrettyJson());
                                         yapiApiDTO.setReqBodyType("application/json;charset=UTF-8");
                                         break;
                                     case "RequestParam":
@@ -249,8 +250,7 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                             yapiApiDTO.setReqBodyForm(new ArrayList<>());
                                         }
 
-                                        yapiApiDTO.getReqBodyForm()
-                                                .addAll(getRequestForm(project, psiParameter, psiMethod));
+                                        yapiApiDTO.getReqBodyForm().addAll(parseRequestForm(psiParameter.getType()));
                                         break;
                                 }
                             });
@@ -267,11 +267,9 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
 
     @Override
     public void parseResponse(Project project, PsiMethod psiMethod, YapiApiDTO yapiApiDTO) {
-        yapiApiDTO.setResponse(getResponse(project, psiMethod.getReturnType()));
-        // TODO
-        // PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
-        // KV<String, Object> parse = psiTypeParserChain.parse(psiMethod.getReturnType());
-        // System.out.println(parse.toPrettyJson());
+        PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
+        KV<String, Object> response = psiTypeParserChain.parse(psiMethod.getReturnType());
+        yapiApiDTO.setResponse(response.toPrettyJson());
     }
 
     private void classRequestPath(StringBuilder path, PsiAnnotation psiAnnotation) {

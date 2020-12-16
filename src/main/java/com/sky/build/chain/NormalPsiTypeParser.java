@@ -2,9 +2,9 @@ package com.sky.build.chain;
 
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiType;
-import com.sky.build.BuildJsonForYApi;
 import com.sky.build.KV;
 import com.sky.build.NormalTypes;
+import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
 
 /**
@@ -23,8 +23,8 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
-        kv.set("type", BuildJsonForYApi.javaTypeToJsType(psiType.getPresentableText()));
-        kv.set("example", NormalTypes.NORMAL_TYPES.get(psiType.getPresentableText()));
+        kv.set("type", NormalTypes.javaTypeToJsType(psiType.getPresentableText()));
+        kv.set("default", NormalTypes.NORMAL_TYPES.get(psiType.getPresentableText()));
     }
 
     @Override
@@ -35,7 +35,9 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
+        kv.set("name", psiField.getName());
         kv.set("description", DesUtil.getDesc(psiField));
+        kv.set("required", RequiredPropertyParse.required(psiField));
 
         parser(psiField.getType(), kv);
     }

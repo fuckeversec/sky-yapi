@@ -7,6 +7,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
+import com.sky.build.domain.SpringApiParserImpl;
 import com.sky.config.ConfigEntity;
 import com.sky.dto.YApiSaveParam;
 import com.sky.dto.YApiSaveResponse;
@@ -29,13 +30,10 @@ public class YapiApiExport extends AbstractApiExport {
 
         List<PsiMethod> selectedMethods = actionPerform(anActionEvent);
 
-        // JsonApiParser jsonApiParser = new SpringApiParserImpl();
+        JsonApiParser jsonApiParser = new SpringApiParserImpl();
 
-        BuildJsonForYApi buildJson = new BuildJsonForYApi();
         List<YapiApiDTO> yapiApiDTOList = selectedMethods.stream()
-                // .map(selectedMethod -> jsonApiParser.parseRequestMethod(project, selectedMethod))
-                .map(selectedMethod -> buildJson.actionPerformed(selectedMethod.getContainingClass(), selectedMethod,
-                        project, null))
+                .map(selectedMethod -> jsonApiParser.parseRequestMethod(project, selectedMethod))
                 .collect(Collectors.toList());
 
         for (YapiApiDTO yapiApiDTO : yapiApiDTOList) {

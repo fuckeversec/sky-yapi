@@ -19,7 +19,7 @@ import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.javadoc.PsiDocTagValue;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiUtil;
-import com.sky.build.BuildJsonForYApi;
+import com.sky.build.NormalTypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -405,7 +405,7 @@ public class DesUtil {
 
         }
 
-        return BuildJsonForYApi.javaTypeToJsType(type);
+        return NormalTypes.javaTypeToJsType(type);
     }
 
     private static String[] parseLinkOrSee(PsiField psiField) {
@@ -473,7 +473,7 @@ public class DesUtil {
     public static String paramDesc(PsiMethod psiMethod, PsiParameter psiParameter) {
 
         if (psiMethod.getDocComment() == null) {
-            return psiParameter.getType().getPresentableText();
+            return NormalTypes.javaTypeToJsType(psiParameter.getType().getPresentableText());
         }
 
         String paramName = psiParameter.getName();

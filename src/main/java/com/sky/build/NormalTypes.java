@@ -85,6 +85,7 @@ public class NormalTypes {
         NORMAL_TYPES.put("short", "1");
         NORMAL_TYPES.put("Short", "0");
         NORMAL_TYPES.put("int", "1");
+        NORMAL_TYPES.put("integer", "1");
         NORMAL_TYPES.put("Integer", "0");
         NORMAL_TYPES.put("long", "1");
         NORMAL_TYPES.put("Long", "0");
@@ -176,6 +177,41 @@ public class NormalTypes {
 
 
     /**
+     * Java type to js type string.
+     *
+     * @param fieldTypeName the field type name
+     * @return the string
+     */
+    public static String javaTypeToJsType(String fieldTypeName) {
+        switch (fieldTypeName) {
+            case "String":
+            case "Character":
+            case "char":
+                return "string";
+            case "Float":
+            case "float":
+            case "Double":
+            case "double":
+            case "BigDecimal":
+                return "number";
+            case "Integer":
+            case "int":
+            case "long":
+            case "Long":
+            case "short":
+            case "Short":
+            case "Byte":
+            case "byte":
+            case "Date":
+                return "integer";
+            case "Boolean":
+                return "boolean";
+            default:
+                return fieldTypeName;
+        }
+    }
+
+    /**
      * Is normal type boolean.
      *
      * @param typeName the type name
@@ -252,4 +288,5 @@ public class NormalTypes {
         return Stream.concat(Arrays.stream(psiClass.getInterfaces()), Arrays.stream(psiClass.getSupers()))
                 .anyMatch(superClass -> collectionClasses.contains(superClass.getQualifiedName()));
     }
+
 }

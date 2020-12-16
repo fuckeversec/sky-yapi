@@ -7,9 +7,13 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiParameterList;
+import com.intellij.psi.PsiType;
+import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.YapiApiDTO;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
@@ -101,6 +105,27 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
 
         PARSE_CONTEXT_THREAD_LOCAL.remove();
         return yapiApiDTO;
+    }
+
+    /**
+     * 生成form类型请求参数描述信息
+     *
+     * @param psiType the psi type
+     * @return the list
+     */
+    public List<Map<String, Object>> parseRequestForm(PsiType psiType) {
+        PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
+        KV<String, Object> response = psiTypeParserChain.parse(psiType);
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (NormalTypes.isNormalType(psiType)) {
+            result.add(response);
+        } else {
+            @SuppressWarnings("unchecked")
+            KV<String, KV<String, Object>> properties =
+                    (KV<String, KV<String, Object>>) response.get("properties");
+            result.addAll(properties.values());
+        }
+        return result;
     }
 
 
