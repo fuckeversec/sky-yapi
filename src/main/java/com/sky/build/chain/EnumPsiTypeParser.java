@@ -28,9 +28,9 @@ public class EnumPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
+        kv.set("description", DesUtil.getEnumDesc(Objects.requireNonNull(PsiUtil.resolveClassInType(psiType))));
         Optional<String> descOptional = DesUtil.getDesc(psiType);
-        descOptional.ifPresent(desc -> kv.set("description",
-                desc + DesUtil.getEnumDesc(Objects.requireNonNull(PsiUtil.resolveClassInType(psiType)))));
+        descOptional.ifPresent(desc -> kv.set("description", desc + kv.get("description")));
     }
 
     @Override

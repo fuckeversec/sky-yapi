@@ -64,6 +64,7 @@ public class NormalTypes {
     public static final List<String> GENERIC_LIST = new ArrayList<>();
 
     static {
+        GENERIC_LIST.add("?");
         GENERIC_LIST.add("T");
         GENERIC_LIST.add("E");
         GENERIC_LIST.add("A");

@@ -73,24 +73,38 @@ public class YapiApiExport extends AbstractApiExport {
                 // 上传
                 YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
                         .uploadSave(yapiSaveParam, configEntity.getCookies());
+
                 if (yapiResponse.getErrcode() != 0) {
                     NotifyUtil.log(NOTIFICATION_GROUP, project,
                             "sorry ,upload api error cause:" + yapiResponse.getErrmsg(), NotificationType.ERROR);
                 } else {
-                    String url =
-                            configEntity.getYApiUrl() + "/project/" + configEntity.getProjectId() + "/interface"
-                                    + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
-                                    .get(yapiSaveParam.getMenu());
-                    NotifyUtil
-                            .log(NOTIFICATION_GROUP, project, "success ,url:  " + url,
-                                    NotificationType.INFORMATION);
+                    notifyCatUrl(project, configEntity, yapiSaveParam);
                 }
+
             } catch (Exception e) {
-                NotifyUtil.log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e,
-                        NotificationType.ERROR);
+                NotifyUtil
+                        .log(NOTIFICATION_GROUP, project, "sorry ,upload api error cause:" + e, NotificationType.ERROR);
+                e.printStackTrace();
             }
         }
 
+    }
+
+    /**
+     * Notify cat url.
+     *
+     * @param project the project
+     * @param configEntity the config entity
+     * @param yapiSaveParam the yapi save param
+     */
+    private void notifyCatUrl(Project project, ConfigEntity configEntity, YApiSaveParam yapiSaveParam) {
+        String url =
+                configEntity.getYApiUrl() + "/project/" + configEntity.getProjectId() + "/interface"
+                        + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
+                        .get(yapiSaveParam.getMenu());
+        NotifyUtil
+                .log(NOTIFICATION_GROUP, project, "success ,url:  " + url,
+                        NotificationType.INFORMATION);
     }
 
     @Override

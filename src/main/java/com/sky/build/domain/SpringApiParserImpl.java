@@ -188,8 +188,6 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                 .filter(psiParameter -> !HttpServletResponse.equals(psiParameter.getType().getCanonicalText()))
                 .forEach(psiParameter -> {
 
-                    Project project = PARSE_CONTEXT_THREAD_LOCAL.get().getProject();
-
                     psiParameter.acceptChildren(new PsiElementVisitor() {
                         @Override
                         public void visitElement(@NotNull PsiElement element) {
@@ -241,16 +239,8 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                         break;
                                     case "RequestHeader":
                                     case SpringMVCConstant.RequestHeader:
-                                        ValueWrapper yapiHeaderDTO = new ValueWrapper();
                                         break;
                                     default:
-                                        // 支持实体对象接收
-                                        if (yapiApiDTO.getReqBodyForm() == null) {
-                                            yapiApiDTO.setReqBodyType("form");
-                                            yapiApiDTO.setReqBodyForm(new ArrayList<>());
-                                        }
-
-                                        yapiApiDTO.getReqBodyForm().addAll(parseRequestForm(psiParameter.getType()));
                                         break;
                                 }
                             });

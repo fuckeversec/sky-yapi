@@ -11,10 +11,12 @@ import com.intellij.psi.PsiType;
 import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.YapiApiDTO;
+import com.sky.util.DesUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import lombok.Builder;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +78,8 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
                 .psiClass(psiMethod.getContainingClass())
                 .build());
 
+        yapiApiDTO.setMenu(DesUtil.getDesc(psiMethod.getContainingClass()));
+
         requestDesc(psiMethod, yapiApiDTO);
 
         requestTitle(psiMethod, yapiApiDTO);
@@ -118,11 +122,13 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
         KV<String, Object> response = psiTypeParserChain.parse(psiType);
         List<Map<String, Object>> result = new ArrayList<>();
         if (NormalTypes.isNormalType(psiType)) {
+            response.set("type", "text");
             result.add(response);
         } else {
             @SuppressWarnings("unchecked")
             KV<String, KV<String, Object>> properties =
                     (KV<String, KV<String, Object>>) response.get("properties");
+            properties.values().forEach(kv -> kv.set("type", "text"));
             result.addAll(properties.values());
         }
         return result;
@@ -138,5 +144,32 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
         private PsiClass psiClass;
 
         private PsiMethod psiMethod;
+
+        private Stack<Map<String, PsiType>> stack;
+
+        public Map<String, PsiType> resolvedGeneralTypes() {
+            if (stack == null) {
+                return new HashMap<>();
+            }
+
+            return stack.peek();
+        }
+
+        public void addResolvedGeneralTypes(Map<String, PsiType> resolvedGeneralTypes) {
+            if (stack == null) {
+                stack = new Stack<>();
+            }
+
+            stack.add(resolvedGeneralTypes);
+        }
+
+        public void popResolvedGeneralTypes() {
+            if (stack == null) {
+                return;
+            }
+
+            stack.pop();
+        }
+
     }
 }

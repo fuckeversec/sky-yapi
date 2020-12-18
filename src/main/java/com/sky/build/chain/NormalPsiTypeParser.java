@@ -37,7 +37,7 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
 
         kv.set("name", psiField.getName());
         kv.set("description", DesUtil.getDesc(psiField));
-        kv.set("required", RequiredPropertyParse.required(psiField));
+        kv.set("required", RequiredPropertyParse.required(psiField) ? "1" : "0");
 
         parser(psiField.getType(), kv);
     }

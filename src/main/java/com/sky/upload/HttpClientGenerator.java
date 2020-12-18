@@ -108,7 +108,7 @@ public class HttpClientGenerator {
         httpClientBuilder.setDefaultSocketConfig(socketConfig);
         connectionManager.setDefaultSocketConfig(socketConfig);
         httpClientBuilder
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, true));
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(1, true));
         generateCookie(httpClientBuilder, site.getCookies());
         return httpClientBuilder.build();
     }

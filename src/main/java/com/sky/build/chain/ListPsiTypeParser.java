@@ -5,6 +5,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.sky.build.KV;
 import com.sky.build.NormalTypes;
+import com.sky.util.DesUtil;
 
 /**
  * 解析collection, json(array)类型数据
@@ -48,6 +49,8 @@ public class ListPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
+        parser(psiField.getType(), kv);
+        kv.set("description", DesUtil.getDesc(psiField));
     }
 
 }

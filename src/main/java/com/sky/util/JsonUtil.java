@@ -19,6 +19,10 @@ public class JsonUtil {
             .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
 
 
+    public static String writeValueAsString(Object obj) {
+        return writeValueAsString(obj, true);
+    }
+
     public static String writeValueAsString(Object obj, boolean pretty) {
         try {
             if (pretty) {

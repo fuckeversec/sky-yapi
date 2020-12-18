@@ -3,6 +3,8 @@ package com.sky.util;
 import com.google.common.base.Strings;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiEnumConstant;
@@ -298,7 +300,25 @@ public class DesUtil {
             return "";
         }
 
-        return getDesc(psiField.getDocComment());
+        String desc = getDesc(psiField.getDocComment());
+
+        if (Strings.isNullOrEmpty(desc)) {
+            // parse swagger ApiModelProperty
+            PsiAnnotation annotation = PsiAnnotationSearchUtil
+                    .findAnnotation(psiField, "io.swagger.annotations.ApiModelProperty");
+
+            if (annotation == null) {
+                return desc;
+            }
+
+            PsiAnnotationMemberValue memberValue = annotation.findAttributeValue("value");
+
+            if (memberValue != null) {
+                return memberValue.getText();
+            }
+
+        }
+        return desc;
     }
 
     /**

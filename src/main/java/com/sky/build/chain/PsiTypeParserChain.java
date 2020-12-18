@@ -19,8 +19,10 @@ public class PsiTypeParserChain {
 
         List<AbstractPsiTypeParser> psiTypeParsers = Arrays
                 .asList(new NormalPsiTypeParser(),
+                        new TimePsiTypeParse(),
                         new EnumPsiTypeParser(),
                         new ListPsiTypeParser(),
+                        new ArrayPsiTypeParser(),
                         new ObjectPsiTypeParse());
 
         firstPsiTypeParser = psiTypeParsers.get(0);
