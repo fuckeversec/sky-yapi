@@ -1,13 +1,14 @@
 package com.sky.upload;
 
-import static com.sky.interaction.UploadToYApi.NOTIFICATION_GROUP;
-import static com.sky.interaction.UploadToYApi.project;
+import static com.sky.interaction.UploadToYapi.NOTIFICATION_GROUP;
+import static com.sky.interaction.UploadToYapi.project;
 import static com.sky.util.JsonUtil.OBJECT_MAPPER;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.intellij.notification.NotificationType;
+import com.sky.config.ConfigEntity;
 import com.sky.constant.YapiConstant;
 import com.sky.dto.ValueWrapper;
 import com.sky.dto.YApiSaveParam;
@@ -17,7 +18,6 @@ import com.sky.dto.YapiCatResponse;
 import com.sky.dto.YapiResponse;
 import com.sky.util.HttpClientUtil;
 import com.sky.util.NotifyUtil;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,8 +29,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,13 +45,19 @@ public class UploadYapi {
     public static Map<Integer, Map<String, Integer>> catMap = new HashMap<>();
 
     /**
+     * Upload save yapi response.
+     *
+     * @param yapiSaveParam the yapi save param
+     * @param configEntity the configEntity
+     * @return the yapi response
+     * @throws IOException the io exception
      * @description: 调用保存接口
      * @param: [yapiSaveParam, attachUpload, path]
      * @return: com.qbb.dto.YapiResponse
      * @author gangyf
-     * @since: 2019/5/15
+     * @since: 2019 /5/15
      */
-    public YapiResponse<List<YApiSaveResponse>> uploadSave(YApiSaveParam yapiSaveParam, String cookies)
+    public YapiResponse<List<YApiSaveResponse>> uploadSave(YApiSaveParam yapiSaveParam, ConfigEntity configEntity)
             throws IOException {
 
         if (Strings.isNullOrEmpty(yapiSaveParam.getTitle())) {
@@ -78,15 +82,11 @@ public class UploadYapi {
             yapiSaveParam.getReqHeaders().add(yapiHeaderDTO);
         }
 
-        YapiResponse<Integer> yapiCatId = getCatIdOrCreate(yapiSaveParam, cookies);
+        YapiResponse<Integer> yapiCatId = getCatIdOrCreate(yapiSaveParam, configEntity.getCookies());
 
         if (yapiCatId.getErrCode() == 0 && yapiCatId.getData() != null) {
             yapiSaveParam.setCatId(yapiCatId.getData().toString());
-            CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(cookies);
-            if (!Strings.isNullOrEmpty(cookies)) {
-                // 使用cookie时, token置空
-                yapiSaveParam.setToken(null);
-            }
+            CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(configEntity.getCookies());
             String response = HttpClientUtil.objectToString(httpclient.execute(
                     getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiSave,
                             OBJECT_MAPPER.writeValueAsString(yapiSaveParam))), "utf-8");
@@ -114,26 +114,6 @@ public class UploadYapi {
         return httpPost;
     }
 
-    /**
-     * @description: 上传文件
-     * @param: [url, filePath]
-     * @return: java.lang.String
-     * @author gangyf
-     * @since: 2019/5/15
-     */
-    public String uploadFile(String url, String filePath) {
-        HttpPost httpPost = null;
-        try {
-            httpPost = new HttpPost(url);
-            FileBody bin = new FileBody(new File(filePath));
-            HttpEntity reqEntity = MultipartEntityBuilder.create().addPart("file", bin).build();
-            httpPost.setEntity(reqEntity);
-            return HttpClientUtil.objectToString(HttpClientUtil.getHttpclient().execute(httpPost), "utf-8");
-        } catch (Exception e) {
-        }
-        return "";
-    }
-
 
     private HttpGet getHttpGet(String url) {
         try {
@@ -153,7 +133,7 @@ public class UploadYapi {
      * @return the cat id or create
      * @throws IOException the io exception
      */
-    public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
+    public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, List<Cookie> cookies) throws IOException {
 
         YapiResponse<Integer> yapiResponse = findFromExist(yapiSaveParam, cookies);
 
@@ -165,7 +145,7 @@ public class UploadYapi {
     }
 
     @Nullable
-    private YapiResponse<Integer> findFromExist(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
+    private YapiResponse<Integer> findFromExist(YApiSaveParam yapiSaveParam, List<Cookie> cookies) throws IOException {
 
         String response;
         CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(cookies);
@@ -213,7 +193,7 @@ public class UploadYapi {
      * @throws IOException
      */
     @NotNull
-    private YapiResponse<Integer> createCatMenu(YApiSaveParam yapiSaveParam, String cookies) throws IOException {
+    private YapiResponse<Integer> createCatMenu(YApiSaveParam yapiSaveParam, List<Cookie> cookies) throws IOException {
         CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(cookies);
         YapiCatMenuParam createCatMenuParam = new YapiCatMenuParam(yapiSaveParam.getMenu(),
                 yapiSaveParam.getProjectId(), yapiSaveParam.getToken());

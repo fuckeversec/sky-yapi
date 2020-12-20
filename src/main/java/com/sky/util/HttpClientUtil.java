@@ -1,15 +1,16 @@
 package com.sky.util;
 
+import com.sky.upload.Cookie;
 import com.sky.upload.HttpClientGenerator;
-import com.sky.upload.Site;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -33,9 +34,9 @@ public class HttpClientUtil {
     private static volatile CloseableHttpClient httpclient;
     private static volatile CloseableHttpClient httpclientWithCookie;
 
-    public static CloseableHttpClient getHttpclient(String cookies) {
+    public static CloseableHttpClient getHttpclient(List<Cookie> cookies) {
 
-        if (StringUtils.isBlank(cookies)) {
+        if (CollectionUtils.isEmpty(cookies)) {
             return getHttpclient();
         } else {
             if (httpclientWithCookie == null) {
@@ -43,8 +44,7 @@ public class HttpClientUtil {
                     if (httpclientWithCookie == null) {
                         try {
                             // 如果配置了cookies, 优先使用cookies, 旧版本使用token创建接口, 会创建空用户
-                            httpclientWithCookie = HTTP_CLIENT_GENERATOR
-                                    .getClient(Site.builder().cookies(cookies).build());
+                            httpclientWithCookie = HTTP_CLIENT_GENERATOR.getClient(cookies);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -60,7 +60,7 @@ public class HttpClientUtil {
             synchronized (HttpClientUtil.class) {
                 if (httpclient == null) {
                     try {
-                        httpclient = HTTP_CLIENT_GENERATOR.getClient(new Site());
+                        httpclient = HTTP_CLIENT_GENERATOR.getClient(null);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

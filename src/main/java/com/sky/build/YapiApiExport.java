@@ -1,6 +1,6 @@
 package com.sky.build;
 
-import static com.sky.interaction.UploadToYApi.NOTIFICATION_GROUP;
+import static com.sky.interaction.UploadToYapi.NOTIFICATION_GROUP;
 
 import com.google.common.base.Strings;
 import com.intellij.notification.NotificationType;
@@ -72,7 +72,7 @@ public class YapiApiExport extends AbstractApiExport {
             try {
                 // 上传
                 YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
-                        .uploadSave(yapiSaveParam, configEntity.getCookies());
+                        .uploadSave(yapiSaveParam, configEntity);
 
                 if (yapiResponse.getErrCode() != 0) {
                     NotifyUtil.log(NOTIFICATION_GROUP, project,

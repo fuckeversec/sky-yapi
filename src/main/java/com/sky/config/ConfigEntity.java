@@ -1,6 +1,9 @@
 package com.sky.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sky.upload.Cookie;
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -14,6 +17,8 @@ import lombok.Data;
 @Data
 public class ConfigEntity {
 
+    private String moduleName;
+
     private String projectToken;
 
     private String projectType;
@@ -23,9 +28,13 @@ public class ConfigEntity {
     @JsonProperty("yApiUrl")
     private String yApiUrl;
 
+    /**
+     * The Menu.
+     */
     private String menu;
 
-    private String cookies;
+    @JsonIgnore
+    private List<Cookie> cookies;
 
     private String status = "undone";
 

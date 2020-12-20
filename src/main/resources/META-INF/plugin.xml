@@ -60,7 +60,7 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="sky-yapi" class="com.sky.interaction.UploadToYApi" text="sky-yapi" description="sky-yapi">
+        <action id="sky-yapi" class="com.sky.interaction.UploadToYapi" text="sky-yapi" description="sky-yapi">
             <add-to-group group-id="EditorLangPopupMenu" anchor="first"/>
         </action>
     </actions>

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -12,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.client.CookieStore;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -89,11 +89,7 @@ public class HttpClientGenerator {
         return SSLConnectionSocketFactory.getSocketFactory();
     }
 
-    public CloseableHttpClient getClient(Site site) {
-        return generateClient(site);
-    }
-
-    private CloseableHttpClient generateClient(Site site) {
+    public CloseableHttpClient getClient(List<Cookie> cookies) {
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
         httpClientBuilder.setConnectionManager(connectionManager);
@@ -109,17 +105,17 @@ public class HttpClientGenerator {
         connectionManager.setDefaultSocketConfig(socketConfig);
         httpClientBuilder
                 .setRetryHandler(new DefaultHttpRequestRetryHandler(1, true));
-        generateCookie(httpClientBuilder, site.getCookies());
+        generateCookie(httpClientBuilder, cookies);
         return httpClientBuilder.build();
     }
 
-    private void generateCookie(HttpClientBuilder httpClientBuilder, String cookies) {
-        if (Strings.isNullOrEmpty(cookies)) {
+    private void generateCookie(HttpClientBuilder httpClientBuilder, List<Cookie> cookies) {
+        if (CollectionUtils.isEmpty(cookies)) {
             return;
         }
 
         CookieStore cookieStore = new BasicCookieStore();
-        for (Cookie cookie : parseCookies(cookies)) {
+        for (Cookie cookie : cookies) {
 
             BasicClientCookie basicClientCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
             basicClientCookie.setDomain(cookie.getDomain());

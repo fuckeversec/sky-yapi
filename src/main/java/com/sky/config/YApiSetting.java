@@ -25,8 +25,6 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
 public class YApiSetting implements Configurable {
 
-    private JPanel yApi;
-
     /**
      * 配置 json
      */
@@ -42,9 +40,8 @@ public class YApiSetting implements Configurable {
      */
     private final PersistentState persistentState = PersistentState.getInstance();
 
-
-    @Nls(capitalization = Nls.Capitalization.Title)
     @Override
+    @Nls(capitalization = Nls.Capitalization.Title)
     public String getDisplayName() {
         return "YApiSetting";
     }
@@ -52,7 +49,7 @@ public class YApiSetting implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        yApi = new JPanel();
+        JPanel yApi = new JPanel();
         yApi.setLayout(new GridLayoutManager(34, 3, JBUI.emptyInsets(), -1, -1));
         final JLabel label1 = new JLabel();
         label1.setText("字段说明");
@@ -141,8 +138,8 @@ public class YApiSetting implements Configurable {
             HttpClientUtil.setHttpclientWithCookie(null);
         }
 
-        persistentState.setConfig(config.getText());
         persistentState.setCookies(cookies.getText());
+        persistentState.setConfig(config.getText());
     }
 
     /**
@@ -152,14 +149,6 @@ public class YApiSetting implements Configurable {
      */
     private String getDefaultConfig() {
         return "{\n" +
-                "  \"isSingle\": true,\n" +
-                "  \"singleConfig\": {\n" +
-                "    \"projectToken\": \"f10526011aa0231a6a7fd6b9ac09dea8896d2e0bc072524e5ba1ce61ef232503\",\n" +
-                "    \"projectId\": \"82\",\n" +
-                "    \"yApiUrl\": \"http://10.0.60.8:3300\",\n" +
-                "    \"menu\": \"api\",\n" +
-                "    \"projectType\": \"api\"\n" +
-                "  },\n" +
                 "  \"multipleConfig\": {\n" +
                 "    \"llb-api\": {\n" +
                 "      \"projectToken\": \"\",\n" +
