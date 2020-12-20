@@ -21,7 +21,7 @@ import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.javadoc.PsiDocTagValue;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiUtil;
-import com.sky.build.NormalTypes;
+import com.sky.build.util.NormalTypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;

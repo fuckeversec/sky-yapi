@@ -1,7 +1,6 @@
 package com.sky.build.util;
 
 import com.intellij.psi.PsiType;
-import com.sky.build.NormalTypes;
 import org.jetbrains.annotations.NotNull;
 
 /**

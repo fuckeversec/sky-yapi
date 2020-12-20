@@ -6,6 +6,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import com.sky.AbstractTestCase;
+import com.sky.build.util.NormalTypes;
 
 public class NormalTypesTest extends AbstractTestCase {
 

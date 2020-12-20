@@ -3,7 +3,7 @@ package com.sky.build.chain;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiType;
 import com.sky.build.KV;
-import com.sky.build.NormalTypes;
+import com.sky.build.util.NormalTypes;
 import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
 

@@ -1,4 +1,4 @@
-package com.sky.build;
+package com.sky.build.util;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiType;

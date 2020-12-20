@@ -14,12 +14,14 @@ import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.java.PsiArrayInitializerMemberValueImpl;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.sky.build.AbstractJsonApiParser;
 import com.sky.build.KV;
 import com.sky.build.chain.PsiTypeParserChain;
+import com.sky.build.util.NormalTypes;
 import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.ValueWrapper;
@@ -29,6 +31,7 @@ import com.sky.util.PsiAnnotationSearchUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
@@ -285,4 +288,26 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
         path.append("/");
     }
 
+    /**
+     * 生成form类型请求参数描述信息
+     *
+     * @param psiType the psi type
+     * @return the list
+     */
+    public List<Map<String, Object>> parseRequestForm(PsiType psiType) {
+        PsiTypeParserChain psiTypeParserChain = new PsiTypeParserChain();
+        KV<String, Object> response = psiTypeParserChain.parse(psiType);
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (NormalTypes.isNormalType(psiType)) {
+            response.set("type", "text");
+            result.add(response);
+        } else {
+            @SuppressWarnings("unchecked")
+            KV<String, KV<String, Object>> properties =
+                    (KV<String, KV<String, Object>>) response.get("properties");
+            properties.values().forEach(kv -> kv.set("type", "text"));
+            result.addAll(properties.values());
+        }
+        return result;
+    }
 }

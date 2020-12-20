@@ -13,7 +13,7 @@ import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
-import com.sky.build.NormalTypes;
+import com.sky.build.util.NormalTypes;
 import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
 import java.util.ArrayList;

@@ -8,7 +8,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
-import com.sky.build.NormalTypes;
+import com.sky.build.util.NormalTypes;
 import com.sky.util.DesUtil;
 import java.util.Objects;
 import java.util.Optional;
