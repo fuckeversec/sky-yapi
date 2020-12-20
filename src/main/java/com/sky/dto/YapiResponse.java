@@ -1,6 +1,8 @@
 package com.sky.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import lombok.Data;
 
 /**
  * yapi 返回结果
@@ -8,56 +10,35 @@ import java.io.Serializable;
  * @author gangyf
  * @since 2019/1/31 12:08 PM
  */
+@Data
 public class YapiResponse<T> implements Serializable {
 
     /**
      * 状态码
      */
-    private Integer errcode;
+    @JsonProperty("errcode")
+    private Integer errCode;
     /**
      * 状态信息
      */
-    private String errmsg;
+    @JsonProperty("errmsg")
+    private String errMsg;
     /**
      * 返回结果
      */
     private T data;
 
-    public Integer getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(Integer errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
     public YapiResponse() {
     }
 
     public YapiResponse(T data) {
-        this.errcode = 0;
-        this.errmsg = "success";
+        this.errCode = 0;
+        this.errMsg = "success";
         this.data = data;
     }
 
     public YapiResponse(Integer errcode, String errmsg) {
-        this.errcode = errcode;
-        this.errmsg = errmsg;
+        this.errCode = errcode;
+        this.errMsg = errmsg;
     }
 }

@@ -227,13 +227,14 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                         ValueWrapper yapiQueryDTO = SpringMvcAnnotationUtil
                                                 .parseRequestParam(annotation, psiParameter, psiMethod);
                                         yapiQueryDTOList.add(yapiQueryDTO);
-
+                                        break;
                                     case "PathVariable":
                                     case SpringMVCConstant.PathVariable:
                                         ValueWrapper yapiPathVariableDTO = SpringMvcAnnotationUtil
                                                 .parsePathVariable(annotation, psiParameter, psiMethod);
                                         yapiPathVariableDTOList.add(yapiPathVariableDTO);
                                         break;
+                                    // TODO
                                     case "RequestAttribute":
                                     case SpringMVCConstant.RequestAttribute:
                                         break;

@@ -74,9 +74,9 @@ public class YapiApiExport extends AbstractApiExport {
                 YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
                         .uploadSave(yapiSaveParam, configEntity.getCookies());
 
-                if (yapiResponse.getErrcode() != 0) {
+                if (yapiResponse.getErrCode() != 0) {
                     NotifyUtil.log(NOTIFICATION_GROUP, project,
-                            "sorry ,upload api error cause:" + yapiResponse.getErrmsg(), NotificationType.ERROR);
+                            "sorry ,upload api error cause:" + yapiResponse.getErrMsg(), NotificationType.ERROR);
                 } else {
                     notifyCatUrl(project, configEntity, yapiSaveParam);
                 }

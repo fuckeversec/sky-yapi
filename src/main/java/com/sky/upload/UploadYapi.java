@@ -80,7 +80,7 @@ public class UploadYapi {
 
         YapiResponse<Integer> yapiCatId = getCatIdOrCreate(yapiSaveParam, cookies);
 
-        if (yapiCatId.getErrcode() == 0 && yapiCatId.getData() != null) {
+        if (yapiCatId.getErrCode() == 0 && yapiCatId.getData() != null) {
             yapiSaveParam.setCatId(yapiCatId.getData().toString());
             CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(cookies);
             if (!Strings.isNullOrEmpty(cookies)) {
@@ -179,7 +179,7 @@ public class UploadYapi {
         YapiResponse<List<YapiCatResponse>> yapiResponse = OBJECT_MAPPER.readValue(response,
                 new TypeReference<YapiResponse<List<YapiCatResponse>>>() {});
 
-        boolean success = yapiResponse.getErrcode() == 0;
+        boolean success = yapiResponse.getErrCode() == 0;
 
         if (success) {
 
@@ -196,10 +196,10 @@ public class UploadYapi {
             }
         } else {
             NotifyUtil.log(NOTIFICATION_GROUP, project,
-                    "yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode(),
+                    "yapi api error: " + yapiResponse.getErrCode() + ", " + yapiResponse.getErrCode(),
                     NotificationType.ERROR);
             throw new RuntimeException(
-                    "yapi api error: " + yapiResponse.getErrcode() + ", " + yapiResponse.getErrcode());
+                    "yapi api error: " + yapiResponse.getErrCode() + ", " + yapiResponse.getErrCode());
         }
         return null;
     }

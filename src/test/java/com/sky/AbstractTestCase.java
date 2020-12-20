@@ -11,7 +11,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import com.intellij.testFramework.LightJavaCodeInsightTestCase;
-import com.sky.build.AbstractJsonApiParser.ParseContext;
+import com.sky.build.ParseContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;

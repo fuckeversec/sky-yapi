@@ -1,7 +1,6 @@
 package com.sky.build;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiMethod;
@@ -16,9 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
-import lombok.Builder;
-import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -135,41 +131,4 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
     }
 
 
-    @Data
-    @Builder
-    public static class ParseContext {
-
-        private Project project;
-
-        private PsiClass psiClass;
-
-        private PsiMethod psiMethod;
-
-        private Stack<Map<String, PsiType>> stack;
-
-        public Map<String, PsiType> resolvedGeneralTypes() {
-            if (stack == null) {
-                return new HashMap<>();
-            }
-
-            return stack.peek();
-        }
-
-        public void addResolvedGeneralTypes(Map<String, PsiType> resolvedGeneralTypes) {
-            if (stack == null) {
-                stack = new Stack<>();
-            }
-
-            stack.add(resolvedGeneralTypes);
-        }
-
-        public void popResolvedGeneralTypes() {
-            if (stack == null) {
-                return;
-            }
-
-            stack.pop();
-        }
-
-    }
 }
