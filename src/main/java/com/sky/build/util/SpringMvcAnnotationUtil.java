@@ -2,11 +2,9 @@ package com.sky.build.util;
 
 import com.google.common.base.Strings;
 import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.PsiParameter;
 import com.sky.dto.ValueWrapper;
-import com.sky.util.DesUtil;
 import java.util.Objects;
 
 /**
@@ -15,17 +13,19 @@ import java.util.Objects;
  */
 public class SpringMvcAnnotationUtil {
 
-    /**
-     * 解析path variable
-     *
-     * @param annotation the annotation
-     * @param psiParameter the psi parameter
-     * @param psiMethod the psi method
-     * @return the value wrapper
-     */
-    public static ValueWrapper parsePathVariable(PsiAnnotation annotation, PsiParameter psiParameter,
-            PsiMethod psiMethod) {
-        return parseRequestParam(annotation, psiParameter, psiMethod);
+    public static void anotherAnnotationParse(PsiAnnotation annotation, PsiParameter psiParameter, ValueWrapper valueWrapper) {
+
+        if (Strings.isNullOrEmpty(annotation.getQualifiedName())) {
+            return;
+        }
+
+        switch (annotation.getQualifiedName()) {
+            case "DateTimeFormat":
+            case "org.springframework.format.annotation.DateTimeFormat":
+                String dateExample = TimeFormatUtil.formatValue(annotation, psiParameter);
+                valueWrapper.setExample(dateExample);
+                break;
+        }
     }
 
     /**
@@ -33,13 +33,10 @@ public class SpringMvcAnnotationUtil {
      *
      * @param annotation the annotation
      * @param psiParameter the psi parameter
-     * @param psiMethod the psi method
      * @return value wrapper
      */
-    public static ValueWrapper parseRequestParam(PsiAnnotation annotation, PsiParameter psiParameter,
-            PsiMethod psiMethod) {
-
-        ValueWrapper yapiQueryDto = new ValueWrapper();
+    public static void parseRequestParam(PsiAnnotation annotation, PsiParameter psiParameter,
+            ValueWrapper yapiQueryDto) {
 
         for (PsiNameValuePair attribute : annotation.getParameterList().getAttributes()) {
 
@@ -73,10 +70,5 @@ public class SpringMvcAnnotationUtil {
             yapiQueryDto.setName(psiParameter.getName());
         }
 
-        yapiQueryDto.setExample(ExampleValueUtil.psiTypeToExample(psiParameter.getType()));
-
-        yapiQueryDto.setDesc(DesUtil.paramDesc(psiMethod, psiParameter));
-
-        return yapiQueryDto;
     }
 }

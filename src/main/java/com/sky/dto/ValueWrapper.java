@@ -1,7 +1,5 @@
 package com.sky.dto;
 
-import com.intellij.psi.PsiVariable;
-import com.jgoodies.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -41,20 +39,4 @@ public class ValueWrapper {
      */
     private String value;
 
-    private PsiVariable origin;
-
-    public void full(ValueWrapper valueWrapper) {
-        if (Strings.isNotBlank(valueWrapper.getName())) {
-            this.setName(valueWrapper.getName());
-        }
-        if (Strings.isNotBlank(valueWrapper.getDesc())) {
-            this.setDesc(valueWrapper.getDesc());
-        }
-        if (Strings.isNotBlank(valueWrapper.getRequired())) {
-            this.setRequired(valueWrapper.getRequired());
-        }
-        if (Strings.isNotBlank(valueWrapper.getExample())) {
-            this.setExample(valueWrapper.getExample());
-        }
-    }
 }

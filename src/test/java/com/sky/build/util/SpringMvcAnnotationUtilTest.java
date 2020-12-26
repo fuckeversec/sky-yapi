@@ -25,9 +25,11 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
                 Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getName()).isEqualTo("id");
         assertThat(valueWrapper.getRequired()).isEqualTo("1");
@@ -40,9 +42,11 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
                 Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getName()).isEqualTo("fake_name");
     }
@@ -54,9 +58,11 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(
-                Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
+                Objects.requireNonNull(
+                        PsiAnnotationSearchUtil.findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getName()).isEqualTo("fake_value");
         assertThat(valueWrapper.getRequired()).isEqualTo("1");
@@ -65,8 +71,8 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         parameter = psiMethod.getParameterList().getParameters()[0];
 
-        valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(Objects.requireNonNull(PsiAnnotationSearchUtil
-                .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+        SpringMvcAnnotationUtil.parseRequestParam(Objects.requireNonNull(PsiAnnotationSearchUtil
+                .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, valueWrapper);
 
         assertThat(valueWrapper.getName()).isEqualTo("fake_name");
         assertThat(valueWrapper.getRequired()).isEqualTo("1");
@@ -79,9 +85,11 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
                 Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getDesc()).isEqualTo("the id");
 
@@ -89,8 +97,8 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         parameter = psiMethod.getParameterList().getParameters()[1];
 
-        valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(Objects.requireNonNull(PsiAnnotationSearchUtil
-                .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+        SpringMvcAnnotationUtil.parseRequestParam(Objects.requireNonNull(PsiAnnotationSearchUtil
+                .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, valueWrapper);
 
         assertThat(valueWrapper.getDesc()).isEqualTo("the gender");
     }
@@ -102,9 +110,11 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parseRequestParam(
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
                 Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter, psiMethod);
+                        .findAnnotation(parameter, SpringMVCConstant.RequestParam)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getDesc()).isEqualTo("Long");
     }
@@ -116,9 +126,11 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parsePathVariable(
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
                 Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.PathVariable)), parameter, psiMethod);
+                        .findAnnotation(parameter, SpringMVCConstant.PathVariable)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getName()).isEqualTo("id");
     }
@@ -130,11 +142,29 @@ public class SpringMvcAnnotationUtilTest extends AbstractTestCase {
 
         PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
 
-        ValueWrapper valueWrapper = SpringMvcAnnotationUtil.parsePathVariable(
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.parseRequestParam(
                 Objects.requireNonNull(PsiAnnotationSearchUtil
-                        .findAnnotation(parameter, SpringMVCConstant.PathVariable)), parameter, psiMethod);
+                        .findAnnotation(parameter, SpringMVCConstant.PathVariable)), parameter,
+                valueWrapper);
 
         assertThat(valueWrapper.getName()).isEqualTo("id");
+    }
+
+    public void testDateTimeFormat_format() {
+        PsiClass userController = psiClassMap.get("UserController");
+
+        PsiMethod psiMethod = getMethodByName(userController, "test15");
+
+        PsiParameter parameter = psiMethod.getParameterList().getParameters()[0];
+
+        ValueWrapper valueWrapper = new ValueWrapper();
+        SpringMvcAnnotationUtil.anotherAnnotationParse(
+                Objects.requireNonNull(PsiAnnotationSearchUtil.findAnnotation(parameter, "org.springframework.format"
+                        + ".annotation.DateTimeFormat")), parameter, valueWrapper);
+
+        String example = valueWrapper.getExample();
+        assertThat(example.matches("\\d{4}-\\d{2}-\\d{2}")).isTrue();
     }
 
 }

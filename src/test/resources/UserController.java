@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.List;
 import com.sky.api.rpc.Response;
 import com.sky.api.rpc.request.UserRequest;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * UserController
@@ -92,6 +94,9 @@ public class UserController {
     @GetMapping("/test/5/{id}")
     public List<String> test14(@PathVariable("id") Long id,
             @RequestParam GenderEnum gender) {}
+
+    @GetMapping("/test/5/{id}")
+    public List<String> test15(@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {}
 
     @GetMapping(value = "/{id}")
     public Response<UserResponse> byId(@PathVariable Long id) {}

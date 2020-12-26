@@ -21,6 +21,7 @@ import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.sky.build.AbstractJsonApiParser;
 import com.sky.build.KV;
 import com.sky.build.chain.PsiTypeParserChain;
+import com.sky.build.util.ExampleValueUtil;
 import com.sky.build.util.NormalTypes;
 import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
@@ -204,16 +206,15 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
 
                             PsiAnnotation[] annotations = modifierList.getAnnotations();
 
-                            if (annotations.length == 0) {
-                                // 支持实体对象接收
-                                if (yapiApiDTO.getReqBodyForm() == null) {
-                                    yapiApiDTO.setReqBodyType("form");
-                                    yapiApiDTO.setReqBodyForm(new ArrayList<>());
-                                }
-
-                                yapiApiDTO.getReqBodyForm().addAll(parseRequestForm(psiParameter.getType()));
+                            if (parseFormData(annotations, yapiApiDTO, psiParameter)) {
                                 return;
                             }
+
+                            AtomicReference<ValueWrapper> valueWrapper = new AtomicReference<>(new ValueWrapper());
+                            valueWrapper.get().setExample(ExampleValueUtil.psiTypeToExample(psiParameter.getType()));
+
+                            valueWrapper.get().setDesc(DesUtil.paramDesc(psiMethod, psiParameter));
+
 
                             Arrays.stream(annotations).forEach(annotation -> {
                                 String qualifiedName = annotation.getQualifiedName();
@@ -227,17 +228,16 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                         break;
                                     case "RequestParam":
                                     case SpringMVCConstant.RequestParam:
-                                        ValueWrapper yapiQueryDTO = SpringMvcAnnotationUtil
-                                                .parseRequestParam(annotation, psiParameter, psiMethod);
-                                        yapiQueryDTOList.add(yapiQueryDTO);
+                                        SpringMvcAnnotationUtil.parseRequestParam(annotation, psiParameter,
+                                                valueWrapper.get());
+                                        yapiQueryDTOList.add(valueWrapper.get());
                                         break;
                                     case "PathVariable":
                                     case SpringMVCConstant.PathVariable:
-                                        ValueWrapper yapiPathVariableDTO = SpringMvcAnnotationUtil
-                                                .parsePathVariable(annotation, psiParameter, psiMethod);
-                                        yapiPathVariableDTOList.add(yapiPathVariableDTO);
+                                        SpringMvcAnnotationUtil.parseRequestParam(annotation, psiParameter,
+                                                valueWrapper.get());
+                                        yapiPathVariableDTOList.add(valueWrapper.get());
                                         break;
-                                    // TODO
                                     case "RequestAttribute":
                                     case SpringMVCConstant.RequestAttribute:
                                         break;
@@ -245,10 +245,13 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                     case SpringMVCConstant.RequestHeader:
                                         break;
                                     default:
+                                        SpringMvcAnnotationUtil.anotherAnnotationParse(annotation, psiParameter,
+                                                valueWrapper.get());
                                         break;
                                 }
                             });
 
+                                yapiPathVariableDTOList.add(valueWrapper.get());
                         }
                     });
 
@@ -309,5 +312,27 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
             result.addAll(properties.values());
         }
         return result;
+    }
+
+    /**
+     * 解析form-data类型请求参数, 此类型不能嵌套复杂对象
+     *
+     * @param annotations the annotations
+     * @param yapiApiDTO the yapi api dto
+     * @param psiParameter the psi parameter
+     * @return the boolean
+     */
+    private boolean parseFormData(PsiAnnotation[] annotations, YapiApiDTO yapiApiDTO, PsiParameter psiParameter) {
+        if (annotations.length == 0) {
+            // 支持实体对象接收
+            if (yapiApiDTO.getReqBodyForm() == null) {
+                yapiApiDTO.setReqBodyType("form");
+                yapiApiDTO.setReqBodyForm(new ArrayList<>());
+            }
+
+            yapiApiDTO.getReqBodyForm().addAll(parseRequestForm(psiParameter.getType()));
+            return true;
+        }
+        return false;
     }
 }

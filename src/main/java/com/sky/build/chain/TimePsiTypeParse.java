@@ -14,7 +14,7 @@ public class TimePsiTypeParse extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {
-        if (!TimeFormatUtil.isTimeType(psiType)){
+        if (!TimeFormatUtil.isTimeType(psiType)) {
             nextParser.parser(psiType, kv);
             return;
         }
