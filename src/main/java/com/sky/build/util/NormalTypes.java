@@ -290,4 +290,7 @@ public class NormalTypes {
                 .anyMatch(superClass -> collectionClasses.contains(superClass.getQualifiedName()));
     }
 
+    public static boolean isString(PsiType type) {
+        return false;
+    }
 }

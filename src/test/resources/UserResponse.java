@@ -3,6 +3,9 @@ package com.sky.api.rpc.response;
 import java.sql.JDBCType;
 import com.sky.api.enums.GenderEnum;
 import java.io.Serializable;
+import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.Length;
+import javax.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +23,9 @@ public class UserResponse implements Serializable {
 
     private String firstName;
 
+    @NotNull
+    @Length(max = 64, min = 1)
+    @Size(max = 64, min = 1, message = "长度不能超过64")
     private String surname;
 
     /**

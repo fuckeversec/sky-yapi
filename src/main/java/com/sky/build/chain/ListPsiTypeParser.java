@@ -4,6 +4,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.sky.build.KV;
+import com.sky.build.util.LengthPropertyParse;
 import com.sky.build.util.NormalTypes;
 import com.sky.util.DesUtil;
 
@@ -51,6 +52,10 @@ public class ListPsiTypeParser extends AbstractPsiTypeParser {
 
         parser(psiField.getType(), kv);
         kv.set("description", DesUtil.getDesc(psiField));
+
+        LengthPropertyParse.maxLength(psiField).ifPresent(length -> kv.set("maxLength", length));
+
+        LengthPropertyParse.minLength(psiField).ifPresent(length -> kv.set("minLength", length));
     }
 
 }

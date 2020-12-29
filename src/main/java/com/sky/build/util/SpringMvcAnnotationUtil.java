@@ -25,6 +25,8 @@ public class SpringMvcAnnotationUtil {
                 String dateExample = TimeFormatUtil.formatValue(annotation, psiParameter);
                 valueWrapper.setExample(dateExample);
                 break;
+            default:
+                break;
         }
     }
 
@@ -33,7 +35,7 @@ public class SpringMvcAnnotationUtil {
      *
      * @param annotation the annotation
      * @param psiParameter the psi parameter
-     * @return value wrapper
+     * @param yapiQueryDto the yapi query dto
      */
     public static void parseRequestParam(PsiAnnotation annotation, PsiParameter psiParameter,
             ValueWrapper yapiQueryDto) {

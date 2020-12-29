@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import com.intellij.testFramework.LightJavaCodeInsightTestCase;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -82,6 +84,19 @@ public abstract class AbstractTestCase extends LightJavaCodeInsightTestCase {
         return Arrays.stream(psiClass.getAllMethods())
                 .filter(method -> method.getName().equals(methodName))
                 .findFirst().get();
+    }
+
+    /**
+     * Gets field by name.
+     *
+     * @param psiClass the psi class
+     * @param fieldName the field name
+     * @return the field by name
+     */
+    protected Optional<PsiField> getFieldByName(@NotNull PsiClass psiClass, @NotNull String fieldName) {
+        return Arrays.stream(psiClass.getAllFields())
+                .filter(field -> field.getName().equals(fieldName))
+                .findFirst();
     }
 
 }
