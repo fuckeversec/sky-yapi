@@ -68,6 +68,9 @@ public class PersistentState implements PersistentStateComponent<Element> {
     public void loadState(Element element) {
         this.config = element.getAttributeValue("config");
         this.cookies = element.getAttributeValue("cookies");
+
+        refreshCookiesCache(cookies);
+        refreshConfigCache(config);
     }
 
 
@@ -135,7 +138,6 @@ public class PersistentState implements PersistentStateComponent<Element> {
                 MODULE_NAME_TO_HOST.computeIfAbsent(configEntity.getModuleName(), moduleName -> {
                     try {
                         String host = new URL(configEntity.getYApiUrl()).getHost();
-                        MODULE_NAME_TO_HOST.put(moduleName, host);
                         configEntity.setCookies(COOKIES_CACHE.get(host));
                         return host;
                     } catch (MalformedURLException e) {
