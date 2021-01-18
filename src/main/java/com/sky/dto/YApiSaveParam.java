@@ -154,29 +154,5 @@ public class YApiSaveParam implements Serializable {
      */
     private String menu;
 
-    /**
-     * Instantiates a new Y api save param.
-     *
-     * @param token the token
-     * @param title the title
-     * @param path the path
-     * @param reqBodyOther the req body other
-     * @param resBody the res body
-     * @param projectId the project id
-     * @param yapiUrl the yapi url
-     * @param desc the desc
-     */
-    public YApiSaveParam(String token, String title, String path, String reqBodyOther, String resBody,
-            Integer projectId, String yapiUrl, String desc) {
-        this.token = token;
-        this.title = title;
-        this.path = path;
-        this.resBody = resBody;
-        this.reqBodyOther = reqBodyOther;
-        this.projectId = projectId;
-        this.yapiUrl = yapiUrl;
-        this.desc = desc;
-    }
-
 
 }

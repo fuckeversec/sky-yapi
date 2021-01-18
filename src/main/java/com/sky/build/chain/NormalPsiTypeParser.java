@@ -2,11 +2,13 @@ package com.sky.build.chain;
 
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
 import com.sky.build.util.LengthPropertyParse;
 import com.sky.build.util.NormalTypes;
 import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
+import java.util.Objects;
 
 /**
  * 简单类型
@@ -18,6 +20,9 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {
+        if (Objects.isNull(PsiUtil.resolveClassInType(psiType))) {
+            return;
+        }
 
         if (!NormalTypes.isNormalType(psiType)) {
             nextParser.parser(psiType, kv);
@@ -30,6 +35,10 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiField psiField, KV<String, Object> kv) {
+
+        if (Objects.isNull(PsiUtil.resolveClassInType(psiField.getType()))) {
+            return;
+        }
 
         if (!NormalTypes.isNormalType(psiField.getType())) {
             nextParser.parser(psiField, kv);

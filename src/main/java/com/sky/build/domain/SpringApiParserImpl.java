@@ -215,7 +215,6 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
 
                             valueWrapper.get().setDesc(DesUtil.paramDesc(psiMethod, psiParameter));
 
-
                             Arrays.stream(annotations).forEach(annotation -> {
                                 String qualifiedName = annotation.getQualifiedName();
 
@@ -251,7 +250,6 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                 }
                             });
 
-                                yapiPathVariableDTOList.add(valueWrapper.get());
                         }
                     });
 

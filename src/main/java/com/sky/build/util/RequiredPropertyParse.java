@@ -19,6 +19,8 @@ public class RequiredPropertyParse {
 
     static {
         notNullAnnotations.add("javax.validation.constraints.NotNull");
+        notNullAnnotations.add("javax.validation.constraints.NotBlank");
+        notNullAnnotations.add("javax.validation.constraints.NotEmpty");
     }
 
     /**

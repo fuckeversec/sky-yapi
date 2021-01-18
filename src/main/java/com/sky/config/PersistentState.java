@@ -39,8 +39,8 @@ import org.jetbrains.annotations.Nullable;
         @com.intellij.openapi.components.Storage(value = "$APP_CONFIG$/YApiConfig.xml")})
 public class PersistentState implements PersistentStateComponent<Element> {
 
-    private String config = "";
-    private String cookies = "";
+    private String config;
+    private String cookies;
 
     protected static Map<String, ConfigEntity> CONFIG_CACHE = new HashMap<>(16);
     protected static Map<String, List<Cookie>> COOKIES_CACHE = new HashMap<>(16);
@@ -96,7 +96,7 @@ public class PersistentState implements PersistentStateComponent<Element> {
      * @return the cookies
      */
     public String getCookies() {
-        return Objects.isNull(cookies) ? "" : cookies;
+        return cookies;
     }
 
     public void setConfig(String config) {
@@ -114,7 +114,7 @@ public class PersistentState implements PersistentStateComponent<Element> {
      */
     protected void refreshCookiesCache(String cookies) {
         Optional<Map<String, List<Cookie>>> optional = JsonUtil
-                .readValue(Optional.ofNullable(cookies).orElse("{}"),
+                .readValue(Optional.ofNullable(Strings.emptyToNull(cookies)).orElse("{}"),
                         new TypeReference<Map<String, List<Cookie>>>() {});
 
         optional.ifPresent(val -> COOKIES_CACHE = val);
@@ -127,7 +127,7 @@ public class PersistentState implements PersistentStateComponent<Element> {
      */
     protected void refreshConfigCache(String config) {
         Optional<List<ConfigEntity>> optional = JsonUtil
-                .readValue(Optional.ofNullable(config).orElse("[]"), new TypeReference<List<ConfigEntity>>() {});
+                .readValue(Optional.ofNullable(Strings.emptyToNull(config)).orElse("[]"), new TypeReference<List<ConfigEntity>>() {});
 
         optional.ifPresent(configEntities -> {
             CONFIG_CACHE = configEntities.stream().collect(Collectors.groupingBy(ConfigEntity::getModuleName,

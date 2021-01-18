@@ -146,7 +146,9 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
     private List<PsiField> getPsiFields(PsiClass psiClass) {
 
         return Arrays.stream(psiClass.getAllFields())
-                .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.FINAL)).collect(Collectors.toList());
+                .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.FINAL))
+                .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.NATIVE))
+                .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.TRANSIENT)).collect(Collectors.toList());
     }
 
     /**
