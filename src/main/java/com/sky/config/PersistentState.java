@@ -135,7 +135,7 @@ public class PersistentState implements PersistentStateComponent<Element> {
 
             CONFIG_CACHE.values().forEach(configEntity -> {
 
-                MODULE_NAME_TO_HOST.computeIfAbsent(configEntity.getModuleName(), moduleName -> {
+                MODULE_NAME_TO_HOST.compute(configEntity.getModuleName(), (key, value) -> {
                     try {
                         String host = new URL(configEntity.getYApiUrl()).getHost();
                         configEntity.setCookies(COOKIES_CACHE.get(host));

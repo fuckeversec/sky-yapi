@@ -110,6 +110,19 @@ public class RequestParseTest extends AbstractTestCase {
         assertThat(yapiApiDTO.getMethod()).isEqualTo("GET");
     }
 
+    public void testRequestMethodWithMultiAnnotations() {
+
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
+
+        PsiClass userController = psiClassMap.get("UserController");
+
+        PsiMethod test = getMethodByName(userController, "test16");
+
+        YapiApiDTO yapiApiDTO = new YapiApiDTO();
+        jsonApiParser.requestMethod(test.getModifierList(), yapiApiDTO);
+        assertThat(yapiApiDTO.getMethod()).isEqualTo("POST");
+    }
+
     public void testRequestMethod_multi() {
 
         SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();

@@ -5,6 +5,7 @@ import com.sky.api.rpc.request.UserRequest;
 import com.sky.api.rpc.response.UserResponse;
 import com.sky.api.service.UserServiceFacade;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -97,6 +98,12 @@ public class UserController {
 
     @GetMapping("/test/5/{id}")
     public List<String> test15(@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day) {}
+
+    @IgnoreAuth
+    @PostMapping("/test/5")
+    public RadishResponse<Long> test16(@RequestBody @Validated WechatReq wechatReq) {
+        return new RadishResponse<>(wechatBiz.exchangeUserInfo(wechatReq));
+    }
 
     @GetMapping(value = "/{id}")
     public Response<UserResponse> byId(@PathVariable Long id) {}

@@ -14,6 +14,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.impl.compiled.ClsEnumConstantImpl;
 import com.intellij.psi.impl.source.PsiEnumConstantImpl;
 import com.intellij.psi.impl.source.javadoc.PsiDocParamRef;
 import com.intellij.psi.javadoc.PsiDocComment;
@@ -210,17 +211,23 @@ public class DesUtil {
 
             StringBuilder sb = new StringBuilder();
             sb.append(psiField.getName()).append("(");
-            PsiExpressionList argumentList = ((PsiEnumConstantImpl) psiField).getArgumentList();
+            PsiExpressionList argumentList;
+            if (psiField instanceof ClsEnumConstantImpl) {
+
+                ClsEnumConstantImpl clsEnumConstant = (ClsEnumConstantImpl) psiField;
+                argumentList = clsEnumConstant.getArgumentList();
+            } else {
+
+                argumentList = ((PsiEnumConstantImpl) psiField).getArgumentList();
+            }
             boolean hasArguments = argumentList != null;
             if (hasArguments) {
-                PsiExpression[] expressions = Objects
-                        .requireNonNull(((PsiEnumConstantImpl) psiField).getArgumentList())
-                        .getExpressions();
+                PsiExpression[] expressions = argumentList.getExpressions();
                 // 先获得名称
                 sb.append(Arrays.stream(expressions).map(PsiExpression::getText).collect(Collectors.joining(", ")));
             } else {
                 if (psiField.getDocComment() != null
-                        || Strings.isNullOrEmpty(psiField.getDocComment().getText())) {
+                        && Strings.isNullOrEmpty(psiField.getDocComment().getText())) {
                     // 使用enum的注释, 或者直接使用名字
                     sb.append(psiField.getDocComment().getText());
                 } else {

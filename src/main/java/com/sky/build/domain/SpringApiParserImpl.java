@@ -108,7 +108,7 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
 
         for (PsiAnnotation psiAnnotation : psiModifierList.getAnnotations()) {
 
-            String method = null;
+            String method;
             switch (Objects.requireNonNull(psiAnnotation.getQualifiedName())) {
                 case "GetMapping":
                 case SpringMVCConstant.GetMapping:
@@ -122,7 +122,7 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                 case SpringMVCConstant.DeleteMapping:
                     method = MAPPING_TO_HTTP_METHOD.get(psiAnnotation.getQualifiedName());
                     yapiApiDTO.setMethod(method);
-                    break;
+                    return;
                 case "RequestMapping":
                 case SpringMVCConstant.RequestMapping:
                     PsiAnnotationMemberValue attributeValue = psiAnnotation
@@ -142,12 +142,9 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                         yapiApiDTO.setMethod(REQUEST_METHOD
                                 .get(((PsiReferenceExpressionImpl) attributeValue).getCanonicalText()));
                     }
+                    return;
                 default:
                     break;
-            }
-
-            if (Strings.isNullOrEmpty(method)) {
-                return;
             }
         }
 
