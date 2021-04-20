@@ -105,6 +105,19 @@ public class UserController {
         return new RadishResponse<>(wechatBiz.exchangeUserInfo(wechatReq));
     }
 
+    @IgnoreAuth
+    @PostMapping("/test" + "/test/5")
+    public RadishResponse<Long> test17(@RequestBody @Validated WechatReq wechatReq) {
+        return new RadishResponse<>(wechatBiz.exchangeUserInfo(wechatReq));
+    }
+
+    private static String VARIABLE = "/variable";
+    @IgnoreAuth
+    @PostMapping(VARIABLE + "/test/5")
+    public RadishResponse<Long> test18(@RequestBody @Validated WechatReq wechatReq) {
+        return new RadishResponse<>(wechatBiz.exchangeUserInfo(wechatReq));
+    }
+
     @GetMapping(value = "/{id}")
     public Response<UserResponse> byId(@PathVariable Long id) {}
 

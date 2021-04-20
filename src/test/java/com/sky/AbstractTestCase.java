@@ -39,8 +39,8 @@ public abstract class AbstractTestCase extends LightJavaCodeInsightTestCase {
 
         super.setUp();
         psiClassMap = Stream
-                .of("UserController.java", "UserResponse.java", "Response.java", "UserRequest.java", "GenderEnum.java",
-                        "MediaType.java").map(fileName -> {
+                .of("UserController.java", "UserControllerForVariable.java", "UserResponse.java", "Response.java",
+                        "UserRequest.java", "GenderEnum.java", "MediaType.java").map(fileName -> {
                     InputStream resourceAsStream = this.getClass().getResourceAsStream("/" + fileName);
                     try {
                         String content = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);

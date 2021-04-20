@@ -10,7 +10,9 @@ import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.YapiApiDTO;
 import com.sky.util.DesUtil;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,10 +23,11 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
 
     public final static ThreadLocal<ParseContext> PARSE_CONTEXT_THREAD_LOCAL = new ThreadLocal<>();
 
-    protected final static String HTTP_METHOD_KEY = "method";
     protected final static Map<String, String> MAPPING_TO_HTTP_METHOD;
-    protected final static String HTTP_REQUEST_PATH_PATH = "path";
-    protected final static String HTTP_REQUEST_PATH_VALUE = "value";
+    protected final static Set<String> ALL_MAPPING;
+    protected final static String HTTP_METHOD_KEY = "method";
+    public final static String HTTP_REQUEST_PATH_PATH = "path";
+    public final static String HTTP_REQUEST_PATH_VALUE = "value";
 
     protected final static Map<String, String> REQUEST_METHOD;
 
@@ -41,6 +44,9 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
         MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.PutMapping, "PUT");
         MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.DeleteMapping, "DELETE");
         MAPPING_TO_HTTP_METHOD.put(SpringMVCConstant.PatchMapping, "PATCH");
+
+        ALL_MAPPING = new HashSet<>(MAPPING_TO_HTTP_METHOD.keySet());
+        ALL_MAPPING.add("RequestMapping");
 
         REQUEST_METHOD = new HashMap<>();
         REQUEST_METHOD.put("GET", "GET");

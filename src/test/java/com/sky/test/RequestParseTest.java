@@ -110,6 +110,54 @@ public class RequestParseTest extends AbstractTestCase {
         assertThat(yapiApiDTO.getMethod()).isEqualTo("GET");
     }
 
+    /**
+     * @RequestMapping("test"+"/test/5")
+     */
+    public void testRequestPath_withStrConcatenate() {
+
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
+
+        PsiClass userController = psiClassMap.get("UserController");
+        PARSE_CONTEXT_THREAD_LOCAL.get().setPsiClass(userController);
+
+        PsiMethod test = getMethodByName(userController, "test17");
+
+        YapiApiDTO yapiApiDTO = new YapiApiDTO();
+        jsonApiParser.requestPath(test.getModifierList(), yapiApiDTO);
+        assertThat(yapiApiDTO.getPath()).isEqualTo("/user/test/test/5");
+    }
+
+    /**
+     * @RequestMapping("test"+"/test/5")
+     */
+    public void testRequestPath_withVariable() {
+
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
+
+        PsiClass userController = psiClassMap.get("UserController");
+        PARSE_CONTEXT_THREAD_LOCAL.get().setPsiClass(userController);
+
+        PsiMethod test = getMethodByName(userController, "test18");
+
+        YapiApiDTO yapiApiDTO = new YapiApiDTO();
+        jsonApiParser.requestPath(test.getModifierList(), yapiApiDTO);
+        assertThat(yapiApiDTO.getPath()).isEqualTo("/user/variable/test/5");
+    }
+
+    public void testRequestPath_withPathPrefix() {
+
+        SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();
+
+        PsiClass userController = psiClassMap.get("UserControllerForVariable");
+        PARSE_CONTEXT_THREAD_LOCAL.get().setPsiClass(userController);
+
+        PsiMethod test = getMethodByName(userController, "test");
+
+        YapiApiDTO yapiApiDTO = new YapiApiDTO();
+        jsonApiParser.requestPath(test.getModifierList(), yapiApiDTO);
+        assertThat(yapiApiDTO.getPath()).isEqualTo("/prefix/user/test");
+    }
+
     public void testRequestMethodWithMultiAnnotations() {
 
         SpringApiParserImpl jsonApiParser = new SpringApiParserImpl();

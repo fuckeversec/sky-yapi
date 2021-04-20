@@ -6,7 +6,6 @@ import com.intellij.psi.PsiType;
 import com.sky.build.KV;
 import com.sky.build.util.LengthPropertyParse;
 import com.sky.util.DesUtil;
-import java.util.function.Supplier;
 
 /**
  * 解析数组, json(array)类型数据
@@ -47,31 +46,6 @@ public class ArrayPsiTypeParser extends AbstractPsiTypeParser {
         LengthPropertyParse.maxLength(psiField).ifPresent(length -> kv.set("maxLength", length));
 
         LengthPropertyParse.minLength(psiField).ifPresent(length -> kv.set("minLength", length));
-
-    }
-
-    public static void main(String[] args) {
-        Supplier<SupplierForTest> supplier = new Supplier<SupplierForTest>() {
-
-            SupplierForTest supplierForTest;
-
-            @Override
-            public SupplierForTest get() {
-                if (supplierForTest == null) {
-                    supplierForTest = new SupplierForTest();
-                }
-                return supplierForTest;
-            }
-
-        };
-
-        System.out.println(supplier);
-        System.out.println(supplier);
-        System.out.println(supplier);
-
-    }
-
-    static class SupplierForTest {
     }
 
 }

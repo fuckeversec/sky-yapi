@@ -11,12 +11,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiParameterList;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.java.PsiArrayInitializerMemberValueImpl;
-import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.sky.build.AbstractJsonApiParser;
 import com.sky.build.KV;
@@ -29,6 +27,7 @@ import com.sky.dto.ValueWrapper;
 import com.sky.dto.YapiApiDTO;
 import com.sky.util.DesUtil;
 import com.sky.util.PsiAnnotationSearchUtil;
+import com.sky.util.SpringPsiUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,59 +46,19 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
     @Override
     public void requestPath(PsiModifierList psiModifierList, YapiApiDTO yapiApiDTO) {
 
-        StringBuilder path = new StringBuilder();
-
-        classRequestPath(path, PsiAnnotationSearchUtil
+        String urlPathForClass = classRequestPath(PsiAnnotationSearchUtil
                 .findAnnotation(PARSE_CONTEXT_THREAD_LOCAL.get().getPsiClass(), SpringMVCConstant.RequestMapping));
 
         Arrays.stream(psiModifierList.getAnnotations())
-                .filter(annotation -> MAPPING_TO_HTTP_METHOD.containsKey(annotation.getQualifiedName()))
+                .filter(annotation -> ALL_MAPPING.contains(annotation.getQualifiedName()))
                 .findFirst().ifPresent(psiAnnotation -> {
 
-            PsiAnnotationMemberValue attributeValue = null;
-            for (PsiNameValuePair attribute : psiAnnotation.getParameterList().getAttributes()) {
-
-                if (attributeValue != null) {
-                    break;
-                }
-
-                if (Strings.isNullOrEmpty(attribute.getName())) {
-                    attributeValue = attribute.getValue();
-                    break;
-                }
-
-                switch (attribute.getName()) {
-                    case HTTP_REQUEST_PATH_PATH:
-                    case HTTP_REQUEST_PATH_VALUE:
-                        attributeValue = attribute.getValue();
-                        break;
-                    default:
-                        break;
-                }
-
-            }
-
-            if (attributeValue instanceof PsiArrayInitializerMemberValueImpl) {
-                String multiPath = Arrays
-                        .stream(((PsiArrayInitializerMemberValueImpl) attributeValue).getInitializers())
-                        .filter(element -> element instanceof PsiLiteralExpressionImpl)
-                        .map(element -> (PsiLiteralExpressionImpl) element)
-                        .map(PsiLiteralExpressionImpl::getValue)
-                        .filter(Objects::nonNull)
-                        .map(Object::toString)
-                        // append each element path to class path
-                        .map(elementPath -> path.toString() + elementPath)
-                        .collect(Collectors.joining(", "));
-
-                // reset path value, already has class path prefix
-                path.delete(0, path.length());
-                path.append(multiPath);
-            } else if (attributeValue instanceof PsiLiteralExpressionImpl) {
-                path.append(((PsiLiteralExpressionImpl) attributeValue).getValue());
-            }
+            String mayBeMultiPath = Arrays
+                    .stream(SpringPsiUtil.extractPath(SpringPsiUtil.findPathMemberValue(psiAnnotation)).split(","))
+                    .map(subPath -> urlPathForClass + subPath).collect(Collectors.joining(", "));
 
             // replace multi(/) to one(/)
-            yapiApiDTO.setPath(path.toString().replaceAll("(?<!https?:)/{2,}", "/"));
+            yapiApiDTO.setPath(mayBeMultiPath.replaceAll("(?<!https?:)/{2,}", "/"));
         });
     }
 
@@ -264,26 +223,12 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
         yapiApiDTO.setResponse(response.toPrettyJson());
     }
 
-    private void classRequestPath(StringBuilder path, PsiAnnotation psiAnnotation) {
+    private String classRequestPath(PsiAnnotation psiAnnotation) {
         if (psiAnnotation == null) {
-            return;
+            return "";
         }
-        Arrays.stream(psiAnnotation.getParameterList().getAttributes()).forEach(psiNameValuePair -> {
-            // like RequestMapping("path")
-            if (psiNameValuePair.getLiteralValue() != null) {
-                path.append(psiNameValuePair.getLiteralValue());
-            } else {
-                // use value and other parameters
-                PsiAnnotationMemberValue psiAnnotationMemberValue = psiAnnotation.findAttributeValue("value");
-                if (Objects.nonNull(psiAnnotationMemberValue) && Objects
-                        .nonNull(psiAnnotationMemberValue.getReference())) {
-                    String[] results = Objects.requireNonNull(psiAnnotationMemberValue.getReference().resolve())
-                            .getText().split("=");
-                    path.append(results[results.length - 1].split(";")[0].replace("\"", "").trim());
-                }
-            }
-        });
-        path.append("/");
+
+        return "/" + SpringPsiUtil.extractPath(SpringPsiUtil.findPathMemberValue(psiAnnotation));
     }
 
     /**
