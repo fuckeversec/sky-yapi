@@ -11,7 +11,9 @@ import java.util.List;
  */
 public class PsiTypeParserChain {
 
-    private static AbstractPsiTypeParser firstPsiTypeParser;
+    private static final AbstractPsiTypeParser FIRST_PSI_TYPE_PARSER;
+
+    private static final ThreadLocal<String> PARSING_CLASS = ThreadLocal.withInitial(String::new);
 
     static {
 
@@ -25,10 +27,10 @@ public class PsiTypeParserChain {
                         new ArrayPsiTypeParser(),
                         new ObjectPsiTypeParse());
 
-        firstPsiTypeParser = psiTypeParsers.get(0);
+        FIRST_PSI_TYPE_PARSER = psiTypeParsers.get(0);
 
         for (AbstractPsiTypeParser psiTypeParser : psiTypeParsers) {
-            psiTypeParser.setFirstPsiTypeParser(firstPsiTypeParser);
+            psiTypeParser.setFirstPsiTypeParser(FIRST_PSI_TYPE_PARSER);
             if (previousPsiTypeParser != null) {
                 previousPsiTypeParser.setNextParser(psiTypeParser);
             }
@@ -44,8 +46,27 @@ public class PsiTypeParserChain {
      */
     public KV<String, Object> parse(PsiType psiType) {
         KV<String, Object> kv = KV.create();
-        firstPsiTypeParser.parser(psiType, kv);
+        FIRST_PSI_TYPE_PARSER.parser(psiType, kv);
         return kv;
+    }
+
+    /**
+     * 类和类属性, 循环引用
+     *
+     * @param qualifiedClassName the qualified class name
+     * @return the boolean
+     */
+    public static boolean circularReference(String qualifiedClassName) {
+        return qualifiedClassName.equals(PARSING_CLASS.get());
+    }
+
+    /**
+     * 设置当前解析类, 全限定名
+     *
+     * @param qualifiedClassName the qualified class name
+     */
+    public static void setCurrentParsingPasiType(String qualifiedClassName) {
+        PARSING_CLASS.set(qualifiedClassName);
     }
 
 }

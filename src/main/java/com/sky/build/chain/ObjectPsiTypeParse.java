@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +44,14 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
         if (psiClass == null) {
             return;
         }
+
+        if (PsiTypeParserChain.circularReference(Objects.requireNonNull(psiClass.getQualifiedName()))) {
+            kv.set("description", DesUtil.getDesc(psiType).orElse(""));
+            kv.set("type", "object");
+            return;
+        }
+
+        PsiTypeParserChain.setCurrentParsingPasiType(psiClass.getQualifiedName());
 
         List<PsiField> collect = getPsiFields(psiClass);
         KV<String, KV<String, Object>> properties = KV.create();
@@ -80,6 +89,8 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
         kv.set("required", required);
         kv.set("properties", properties);
         kv.set("description", DesUtil.getDesc(psiType).orElse(""));
+
+        PsiTypeParserChain.setCurrentParsingPasiType(null);
     }
 
     @Override
