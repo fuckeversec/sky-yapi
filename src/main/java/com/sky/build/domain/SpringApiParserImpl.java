@@ -177,8 +177,8 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                 switch (Objects.requireNonNull(qualifiedName)) {
                                     case "RequestBody":
                                     case SpringMVCConstant.RequestBody:
-                                        KV<String, Object> response = psiTypeParserChain.parse(psiParameter.getType());
-                                        yapiApiDTO.setRequestBody(response.toPrettyJson());
+                                        KV<String, Object> request = psiTypeParserChain.parse(psiParameter.getType());
+                                        yapiApiDTO.setRequestBody(request.toPrettyJson());
                                         yapiApiDTO.setReqBodyType("application/json;charset=UTF-8");
                                         break;
                                     case "RequestParam":
