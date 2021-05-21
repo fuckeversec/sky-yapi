@@ -74,6 +74,8 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
                 fieldProperty.set("description", DesUtil.getDesc(psiField));
             } else {
                 firstPsiTypeParser.parser(psiField, fieldProperty);
+                fieldProperty.set("name", psiField.getName());
+                fieldProperty.set("required", RequiredPropertyParse.required(psiField) ? "1" : "0");
             }
 
             // 存在非空注解, 添加到required列表
@@ -98,6 +100,7 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
         KV<String, Object> properties = KV.create();
         parser(psiField.getType(), properties);
         kv.putAll(properties);
+        kv.set("name", psiField.getName());
         kv.set("description", DesUtil.getDesc(psiField));
     }
 

@@ -32,7 +32,6 @@ public class TimePsiTypeParse extends AbstractPsiTypeParser {
         }
 
         parser(psiField.getType(), kv);
-        kv.set("name", psiField.getName());
         kv.set("description", DesUtil.getDesc(psiField));
         kv.set("default", TimeFormatUtil.formatValue(psiField));
     }

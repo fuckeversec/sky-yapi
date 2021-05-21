@@ -6,7 +6,6 @@ import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
 import com.sky.build.util.LengthPropertyParse;
 import com.sky.build.util.NormalTypes;
-import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
 import java.util.Objects;
 
@@ -45,9 +44,7 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
-        kv.set("name", psiField.getName());
         kv.set("description", DesUtil.getDesc(psiField));
-        kv.set("required", RequiredPropertyParse.required(psiField) ? "1" : "0");
 
         if (NormalTypes.isString(psiField.getType())) {
             LengthPropertyParse.maxLength(psiField).ifPresent(length -> kv.set("maxLength", length));
