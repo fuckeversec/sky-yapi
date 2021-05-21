@@ -1,5 +1,7 @@
 package com.sky.build.domain;
 
+import static com.sky.build.util.SpringMvcAnnotationUtil.anotherAnnotationParse;
+import static com.sky.build.util.SpringMvcAnnotationUtil.parseRequestParam;
 import static com.sky.constant.JavaConstant.HttpServletRequest;
 import static com.sky.constant.JavaConstant.HttpServletResponse;
 
@@ -21,7 +23,6 @@ import com.sky.build.KV;
 import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.build.util.ExampleValueUtil;
 import com.sky.build.util.NormalTypes;
-import com.sky.build.util.SpringMvcAnnotationUtil;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.ValueWrapper;
 import com.sky.dto.YapiApiDTO;
@@ -150,6 +151,7 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                 .forEach(psiParameter -> {
 
                     psiParameter.acceptChildren(new PsiElementVisitor() {
+                        @SuppressWarnings("unchecked")
                         @Override
                         public void visitElement(@NotNull PsiElement element) {
                             super.visitElement(element);
@@ -166,13 +168,15 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                 return;
                             }
 
-                            AtomicReference<ValueWrapper> valueWrapper = new AtomicReference<>(new ValueWrapper());
-                            valueWrapper.get().setExample(ExampleValueUtil.psiTypeToExample(psiParameter.getType()));
-
-                            valueWrapper.get().setDesc(DesUtil.paramDesc(psiMethod, psiParameter));
-
                             Arrays.stream(annotations).forEach(annotation -> {
+
                                 String qualifiedName = annotation.getQualifiedName();
+
+                                AtomicReference<ValueWrapper> valueWrapper = new AtomicReference<>(new ValueWrapper());
+                                valueWrapper.get()
+                                        .setExample(ExampleValueUtil.psiTypeToExample(psiParameter.getType()));
+
+                                valueWrapper.get().setDesc(DesUtil.paramDesc(psiMethod, psiParameter));
 
                                 switch (Objects.requireNonNull(qualifiedName)) {
                                     case "RequestBody":
@@ -181,27 +185,28 @@ public class SpringApiParserImpl extends AbstractJsonApiParser {
                                         yapiApiDTO.setRequestBody(request.toPrettyJson());
                                         yapiApiDTO.setReqBodyType("application/json;charset=UTF-8");
                                         break;
+                                    case "ModelAttribute":
+                                    case "org.springframework.web.bind.annotation.ModelAttribute":
+                                        ((KV<String, KV<String, String>>) psiTypeParserChain
+                                                .parse(psiParameter.getType()).get("properties")).values()
+                                                .forEach(requestParam -> yapiQueryDTOList
+                                                        .add(new ValueWrapper(requestParam)));
+                                        break;
                                     case "RequestParam":
                                     case SpringMVCConstant.RequestParam:
-                                        SpringMvcAnnotationUtil.parseRequestParam(annotation, psiParameter,
-                                                valueWrapper.get());
+                                        parseRequestParam(annotation, psiParameter, valueWrapper.get());
                                         yapiQueryDTOList.add(valueWrapper.get());
                                         break;
                                     case "PathVariable":
                                     case SpringMVCConstant.PathVariable:
-                                        SpringMvcAnnotationUtil.parseRequestParam(annotation, psiParameter,
-                                                valueWrapper.get());
+                                        parseRequestParam(annotation, psiParameter, valueWrapper.get());
                                         yapiPathVariableDTOList.add(valueWrapper.get());
-                                        break;
-                                    case "RequestAttribute":
-                                    case SpringMVCConstant.RequestAttribute:
                                         break;
                                     case "RequestHeader":
                                     case SpringMVCConstant.RequestHeader:
                                         break;
                                     default:
-                                        SpringMvcAnnotationUtil.anotherAnnotationParse(annotation, psiParameter,
-                                                valueWrapper.get());
+                                        anotherAnnotationParse(annotation, psiParameter, valueWrapper.get());
                                         break;
                                 }
                             });

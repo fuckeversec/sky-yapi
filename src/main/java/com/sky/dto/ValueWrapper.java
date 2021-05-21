@@ -1,5 +1,6 @@
 package com.sky.dto;
 
+import com.sky.build.KV;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,4 +40,11 @@ public class ValueWrapper {
      */
     private String value;
 
+    public ValueWrapper(KV<String, String> requestParam) {
+        this.required = requestParam.get("required");
+        this.desc = requestParam.get("description");
+        this.example = requestParam.get("default");
+        this.name =  requestParam.get("name");
+        this.value = requestParam.get("value");
+    }
 }

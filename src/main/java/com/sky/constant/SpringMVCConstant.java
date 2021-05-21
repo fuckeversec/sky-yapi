@@ -30,4 +30,6 @@ public interface SpringMVCConstant {
 
     String PathVariable="org.springframework.web.bind.annotation.PathVariable";
 
+    String ModelAttribute="org.springframework.web.bind.annotation.ModelAttribute";
+
 }
