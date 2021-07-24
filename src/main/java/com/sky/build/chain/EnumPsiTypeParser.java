@@ -1,6 +1,7 @@
 package com.sky.build.chain;
 
 import static com.sky.build.AbstractJsonApiParser.PARSE_CONTEXT_THREAD_LOCAL;
+import static com.sky.build.util.GenericTypeResolveUtil.resolveGenericTypes;
 
 import com.google.common.base.Strings;
 import com.intellij.psi.PsiClass;
@@ -10,6 +11,7 @@ import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
 import com.sky.build.util.NormalTypes;
 import com.sky.util.DesUtil;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,7 +42,19 @@ public class EnumPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
-        kv.set("type", DesUtil.enumType(PARSE_CONTEXT_THREAD_LOCAL.get().getProject(), psiField));
+        PsiClass psiClass = PsiUtil.resolveClassInType(psiField.getType());
+
+        if (psiClass == null) {
+            return;
+        }
+
+        Map<String, PsiType> resolvedGeneralTypes = resolveGenericTypes(psiField.getType(), psiClass);
+
+        String enumType = DesUtil.enumType(PARSE_CONTEXT_THREAD_LOCAL.get().getProject(), psiField);
+        if (resolvedGeneralTypes.containsKey(enumType)){
+            enumType = NormalTypes.javaTypeToJsType(resolvedGeneralTypes.get(enumType).getPresentableText());
+        }
+        kv.set("type", enumType);
         parser(psiField.getType(), kv);
         // 拼接字段注释和Enum类注释
         String description = Stream.of(DesUtil.getDesc(psiField), kv.get("description").toString())

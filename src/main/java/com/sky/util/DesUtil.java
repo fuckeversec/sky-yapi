@@ -474,7 +474,7 @@ public class DesUtil {
             return Optional.empty();
         }
         return Arrays.stream(docComment.getTags())
-                .filter(doc -> doc.getName().equals("see") || doc.getName().equals("link")).findFirst();
+                .filter(doc -> "see".equals(doc.getName()) || "link".equals(doc.getName())).findFirst();
     }
 
     /**

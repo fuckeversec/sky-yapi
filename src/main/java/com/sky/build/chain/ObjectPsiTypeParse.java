@@ -1,6 +1,7 @@
 package com.sky.build.chain;
 
 import static com.sky.build.AbstractJsonApiParser.PARSE_CONTEXT_THREAD_LOCAL;
+import static com.sky.build.util.GenericTypeResolveUtil.resolveGenericTypes;
 
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationMemberValue;
@@ -8,8 +9,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeParameter;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
@@ -18,7 +17,6 @@ import com.sky.build.util.RequiredPropertyParse;
 import com.sky.util.DesUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,7 +43,8 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
             return;
         }
 
-        if (PsiTypeParserChain.circularReference(Objects.requireNonNull(psiClass.getQualifiedName()))) {
+        if (PsiTypeParserChain
+                .circularReference(Objects.requireNonNull(psiClass.getQualifiedName(), psiType.getCanonicalText()))) {
             kv.set("description", DesUtil.getDesc(psiType).orElse(""));
             kv.set("type", "object");
             return;
@@ -163,37 +162,6 @@ public class ObjectPsiTypeParse extends AbstractPsiTypeParser {
                 .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.FINAL))
                 .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.NATIVE))
                 .filter(psiField -> !psiField.hasModifierProperty(PsiModifier.TRANSIENT)).collect(Collectors.toList());
-    }
-
-    /**
-     * Resolve general types map.
-     * Map<String, PsiType>
-     * key: General Type
-     * value: Actual Type (might be null, when doesn't use diamond to specify type)
-     *
-     * @param psiType the psi type
-     * @param psiClass the psi class
-     * @return the map
-     */
-    private Map<String, PsiType> resolveGenericTypes(PsiType psiType, PsiClass psiClass) {
-
-        Map<String, PsiType> result = new HashMap<>(8);
-        PsiTypeParameter[] typeParameters = psiClass.getTypeParameters();
-        if (typeParameters.length == 0) {
-            return result;
-        }
-
-        PsiType[] parameters = ((PsiClassReferenceType) psiType).getParameters();
-
-        for (int i = 0; i < typeParameters.length; i++) {
-            PsiType actualType = null;
-            if (parameters.length > i) {
-                actualType = parameters[i];
-            }
-            result.put(typeParameters[i].getName(), actualType);
-        }
-
-        return result;
     }
 
     /**
