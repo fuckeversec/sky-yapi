@@ -73,7 +73,8 @@ public class YApiSetting implements Configurable {
                 new Dimension(150, 50), null, 0, false));
 
         cookies = new JTextArea();
-        cookies.setText(StringUtils.isNotBlank(persistentState.getCookies()) ? persistentState.getCookies() : "");
+        cookies.setText(StringUtils.isNotBlank(persistentState.getCookies()) ? persistentState.getCookies() :
+                getDefaultCookies());
         yApi.add(cookies, new GridConstraints(22, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
                 GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null,
                 new Dimension(150, 50), null, 0, false));
@@ -133,7 +134,7 @@ public class YApiSetting implements Configurable {
 
     @Override
     public void apply() {
-        if (!persistentState.getCookies().equals(cookies.getText())) {
+        if (!cookies.getText().equals(persistentState.getCookies())) {
             // 重置httpclient
             HttpClientUtil.setHttpclientWithCookie(null);
         }
@@ -148,24 +149,28 @@ public class YApiSetting implements Configurable {
      * @return the default config
      */
     private String getDefaultConfig() {
-        return "{\n" +
-                "  \"multipleConfig\": {\n" +
-                "    \"llb-api\": {\n" +
-                "      \"projectToken\": \"\",\n" +
-                "      \"projectId\": \"\",\n" +
-                "      \"yApiUrl\": \"\",\n" +
-                "      \"menu\": \"api\",\n" +
-                "      \"projectType\": \"\"\n" +
-                "    },\n" +
-                "    \"llb-admin-api\": {\n" +
-                "      \"projectToken\": \"\",\n" +
-                "      \"projectId\": \"\",\n" +
-                "      \"yApiUrl\": \"\",\n" +
-                "      \"menu\": \"api\",\n" +
-                "      \"projectType\": \"\"\n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
+        return "[\n"
+                + "  {\n"
+                + "    \"moduleName\": \"idea module name\",\n"
+                + "    \"projectId\": 1967,\n"
+                + "    \"yApiUrl\": \"http://yapi.kaikeba.com/\",\n"
+                + "    \"menu\": \"test\",\n"
+                + "    \"projectType\": \"api\",\n"
+                + "    \"reqBodyIsJsonSchema\": true,\n"
+                + "    \"resBodyIsJsonSchema\": true\n"
+                + "  }\n"
+                + "]";
+    }
+
+    /**
+     * Gets default cookies.
+     *
+     * @return the default cookies
+     */
+    private String getDefaultCookies() {
+        return "{\n"
+                + "  \"yapi.kaikeba.com\": []\n"
+                + "}";
     }
 
 }
