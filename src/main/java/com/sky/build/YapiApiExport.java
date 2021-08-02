@@ -3,7 +3,10 @@ package com.sky.build;
 import static com.sky.interaction.UploadToYapi.NOTIFICATION_GROUP;
 
 import com.google.common.base.Strings;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
@@ -98,13 +101,15 @@ public class YapiApiExport extends AbstractApiExport {
      * @param yapiSaveParam the yapi save param
      */
     private void notifyCatUrl(Project project, ConfigEntity configEntity, YApiSaveParam yapiSaveParam) {
-        String url =
-                configEntity.getYApiUrl() + "/project/" + configEntity.getProjectId() + "/interface"
-                        + "/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
-                        .get(yapiSaveParam.getMenu());
-        NotifyUtil
-                .log(NOTIFICATION_GROUP, project, "success ,url:  " + url,
-                        NotificationType.INFORMATION);
+        String url = configEntity.getYApiUrl().replaceAll("/$", "") + "/project/" + configEntity.getProjectId()
+                + "/interface/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
+                .get(yapiSaveParam.getMenu());
+
+        Notification notification = NOTIFICATION_GROUP.createNotification("<html>Successful Paste",
+                "<a href=\"" + url + "\" target=\"blank\">" + url + "</a> generate success!</html>",
+                NotificationType.INFORMATION, new NotificationListener.UrlOpeningListener(true));
+
+        Notifications.Bus.notify(notification, project);
     }
 
     @Override
