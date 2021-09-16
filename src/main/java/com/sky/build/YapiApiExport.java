@@ -74,14 +74,13 @@ public class YapiApiExport extends AbstractApiExport {
             }
             try {
                 // 上传
-                YapiResponse<List<YApiSaveResponse>> yapiResponse = new UploadYapi()
-                        .uploadSave(yapiSaveParam, configEntity);
+                YapiResponse<YApiSaveResponse> yapiResponse = new UploadYapi().uploadSave(yapiSaveParam, configEntity);
 
                 if (yapiResponse.getErrCode() != 0) {
                     NotifyUtil.log(NOTIFICATION_GROUP, project,
                             "sorry ,upload api error cause:" + yapiResponse.getErrMsg(), NotificationType.ERROR);
                 } else {
-                    notifyCatUrl(project, configEntity, yapiSaveParam);
+                    notifyCatUrl(project, configEntity, yapiResponse.getData());
                 }
 
             } catch (Exception e) {
@@ -98,15 +97,20 @@ public class YapiApiExport extends AbstractApiExport {
      *
      * @param project the project
      * @param configEntity the config entity
-     * @param yapiSaveParam the yapi save param
+     * @param yApiSaveResponse the yapi save param
      */
-    private void notifyCatUrl(Project project, ConfigEntity configEntity, YApiSaveParam yapiSaveParam) {
-        String url = configEntity.getYApiUrl().replaceAll("/$", "") + "/project/" + configEntity.getProjectId()
-                + "/interface/api/cat_" + UploadYapi.catMap.get(configEntity.getProjectId())
-                .get(yapiSaveParam.getMenu());
+    private void notifyCatUrl(Project project, ConfigEntity configEntity, YApiSaveResponse yApiSaveResponse) {
 
-        Notification notification = NOTIFICATION_GROUP.createNotification("<html>Successful Paste",
-                "<a href=\"" + url + "\" target=\"blank\">" + url + "</a> generate success!</html>",
+        if (yApiSaveResponse == null) {
+            return;
+        }
+
+        String url = configEntity.getYApiUrl().replaceAll("/$", "") + "/project/" + configEntity.getProjectId()
+                + "/interface/api/" + yApiSaveResponse.getId();
+
+        Notification notification = NOTIFICATION_GROUP.createNotification(
+                "Congratulation \uD83C\uDF89\uD83C\uDF89\uD83C\uDF89",
+                "<html><a href=\"" + url + "\" target=\"blank\">" + url + "</a></html>",
                 NotificationType.INFORMATION, new NotificationListener.UrlOpeningListener(true));
 
         Notifications.Bus.notify(notification, project);

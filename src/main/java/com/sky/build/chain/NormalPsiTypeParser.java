@@ -1,5 +1,8 @@
 package com.sky.build.chain;
 
+import static com.sky.build.AbstractJsonApiParser.PARSE_CONTEXT_THREAD_LOCAL;
+
+import com.google.common.base.Strings;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiUtil;
@@ -8,6 +11,8 @@ import com.sky.build.util.LengthPropertyParse;
 import com.sky.build.util.NormalTypes;
 import com.sky.util.DesUtil;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 简单类型
@@ -44,7 +49,10 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
             return;
         }
 
-        kv.set("description", DesUtil.getDesc(psiField));
+        kv.set("description", Stream.of(DesUtil.getDesc(psiField),
+                        DesUtil.getLinkOrSeeRemark(PARSE_CONTEXT_THREAD_LOCAL.get().getProject(), psiField))
+                .filter(desc -> !Strings.isNullOrEmpty(desc))
+                .collect(Collectors.joining(",")));
 
         if (NormalTypes.isString(psiField.getType())) {
             LengthPropertyParse.maxLength(psiField).ifPresent(length -> kv.set("maxLength", length));

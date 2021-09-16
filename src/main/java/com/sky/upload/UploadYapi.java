@@ -19,13 +19,18 @@ import com.sky.dto.YapiResponse;
 import com.sky.util.HttpClientUtil;
 import com.sky.util.NotifyUtil;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -42,6 +47,8 @@ import org.jetbrains.annotations.Nullable;
 public class UploadYapi {
 
 
+    // projectId -> {method: Set<urlPath>}
+    public static Map<Integer, Map<String, Set<String>>> uploadedUrlPath = new HashMap<>();
     public static Map<Integer, Map<String, Integer>> catMap = new HashMap<>();
 
     /**
@@ -57,7 +64,7 @@ public class UploadYapi {
      * @author gangyf
      * @since: 2019 /5/15
      */
-    public YapiResponse<List<YApiSaveResponse>> uploadSave(YApiSaveParam yapiSaveParam, ConfigEntity configEntity)
+    public YapiResponse<YApiSaveResponse> uploadSave(YApiSaveParam yapiSaveParam, ConfigEntity configEntity)
             throws IOException {
 
         if (Strings.isNullOrEmpty(yapiSaveParam.getTitle())) {
@@ -87,20 +94,88 @@ public class UploadYapi {
         if (yapiCatId.getErrCode() == 0 && yapiCatId.getData() != null) {
             yapiSaveParam.setCatId(yapiCatId.getData().toString());
             CloseableHttpClient httpclient = HttpClientUtil.getHttpclient(configEntity.getCookies());
-            String response = HttpClientUtil.objectToString(httpclient.execute(
-                    getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiSave,
-                            OBJECT_MAPPER.writeValueAsString(yapiSaveParam))), "utf-8");
-            return OBJECT_MAPPER.readValue(response, new TypeReference<YapiResponse<List<YApiSaveResponse>>>() {});
+
+            YapiResponse<YApiSaveResponse> yapiResponse;
+            if (uploadedUrlPath.computeIfAbsent(yapiSaveParam.getProjectId(), key -> new HashMap<>())
+                    .computeIfAbsent(yapiSaveParam.getMethod(), key -> new HashSet<>())
+                    .contains(yapiSaveParam.getPath())) {
+
+                yapiResponse = saveNewYapi(httpclient, yapiSaveParam);
+            } else {
+
+                yapiResponse = addNewYapi(httpclient, yapiSaveParam);
+                uploadedUrlPath.get(yapiSaveParam.getProjectId())
+                        .get(yapiSaveParam.getMethod())
+                        .add(yapiSaveParam.getPath());
+            }
+
+            if (yapiResponse.getErrCode() != 40022) {
+                return yapiResponse;
+            }
+
+            return saveNewYapi(httpclient, yapiSaveParam);
+
         }
 
         throw new RuntimeException("创建分类失败: " + yapiSaveParam.getMenu());
+    }
+
+    /**
+     * 新增或更新
+     *
+     * @param httpclient the httpclient
+     * @param yapiSaveParam the yapi save param
+     * @return the yapi response
+     * @throws IOException the io exception
+     */
+    private YapiResponse<YApiSaveResponse> saveNewYapi(CloseableHttpClient httpclient, YApiSaveParam yapiSaveParam)
+            throws IOException {
+
+        CloseableHttpResponse httpResponse = httpclient.execute(
+                getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiSave,
+                        OBJECT_MAPPER.writeValueAsString(yapiSaveParam)));
+
+        String response = HttpClientUtil.objectToString(httpResponse, StandardCharsets.UTF_8.toString());
+
+        YapiResponse<List<YApiSaveResponse>> listYapiResponse = OBJECT_MAPPER.readValue(response,
+                new TypeReference<YapiResponse<List<YApiSaveResponse>>>() {});
+
+        YapiResponse<YApiSaveResponse> yapiResponse = new YapiResponse<>();
+        yapiResponse.setErrCode(listYapiResponse.getErrCode());
+        yapiResponse.setErrMsg(listYapiResponse.getErrMsg());
+        if (CollectionUtils.isNotEmpty(listYapiResponse.getData())) {
+            yapiResponse.setData(listYapiResponse.getData().get(0));
+        }
+        return yapiResponse;
+    }
+
+    /**
+     * 新增接口
+     *
+     * @param httpclient the httpclient
+     * @param yapiSaveParam the yapi save param
+     * @return the yapi response
+     * @throws IOException the io exception
+     */
+    private YapiResponse<YApiSaveResponse> addNewYapi(CloseableHttpClient httpclient, YApiSaveParam yapiSaveParam)
+            throws IOException {
+
+        CloseableHttpResponse httpResponse = httpclient.execute(
+                getHttpPost(yapiSaveParam.getYapiUrl() + YapiConstant.yapiAdd,
+                        OBJECT_MAPPER.writeValueAsString(yapiSaveParam)));
+
+        String response = HttpClientUtil.objectToString(httpResponse, StandardCharsets.UTF_8.toString());
+
+        return OBJECT_MAPPER.readValue(response, new TypeReference<YapiResponse<YApiSaveResponse>>() {});
     }
 
 
     /**
      * 获得httpPost
      *
-     * @return
+     * @param url the url
+     * @param body the body
+     * @return http post
      */
     private HttpPost getHttpPost(String url, String body) {
         HttpPost httpPost = null;
@@ -133,7 +208,8 @@ public class UploadYapi {
      * @return the cat id or create
      * @throws IOException the io exception
      */
-    public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, List<Cookie> cookies) throws IOException {
+    public YapiResponse<Integer> getCatIdOrCreate(YApiSaveParam yapiSaveParam, List<Cookie> cookies)
+            throws IOException {
 
         YapiResponse<Integer> yapiResponse = findFromExist(yapiSaveParam, cookies);
 
@@ -188,9 +264,9 @@ public class UploadYapi {
      * 创建一个信息的cat
      *
      * @param yapiSaveParam yapi相关配置
-     * @param cookies
-     * @return
-     * @throws IOException
+     * @param cookies the cookies
+     * @return yapi response
+     * @throws IOException the io exception
      */
     @NotNull
     private YapiResponse<Integer> createCatMenu(YApiSaveParam yapiSaveParam, List<Cookie> cookies) throws IOException {
@@ -218,11 +294,10 @@ public class UploadYapi {
      * @param yapiSaveParam the yapi save param
      * @param catResponse the cat response
      */
-    @NotNull
     private void cacheCatResponse(YApiSaveParam yapiSaveParam, YapiCatResponse catResponse) {
 
         catMap.computeIfAbsent(yapiSaveParam.getProjectId(),
-                (Function<Integer, Map<String, Integer>>) integer -> new HashMap<>(16))
+                        (Function<Integer, Map<String, Integer>>) integer -> new HashMap<>(16))
                 .put(catResponse.getName(), catResponse.getId());
 
     }

@@ -123,7 +123,7 @@ public class DesUtil {
      * @param text the text
      * @return the url re ference r desc
      */
-    public static String getUrlReFerenceRDesc(String text) {
+    public static String getUrlReferenceRDesc(String text) {
         if (Strings.isNullOrEmpty(text)) {
             return text;
         }
