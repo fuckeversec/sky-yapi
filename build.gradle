@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'org.sky'
-version '1.12-SNAPSHOT'
+version '1.13-SNAPSHOT'
 
 apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'idea'
@@ -25,6 +25,7 @@ repositories {
 
 dependencies {
 
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.5'
     compileOnly(group: 'commons-io', name: 'commons-io', version: '2.6')
 
     compileOnly 'org.projectlombok:lombok:1.18.16'

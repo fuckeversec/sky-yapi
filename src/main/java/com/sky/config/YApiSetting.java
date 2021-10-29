@@ -96,7 +96,7 @@ public class YApiSetting implements Configurable {
         yApi.add(label7, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
                 GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label8 = new JLabel();
-        label8.setText("token 获取方式 ： 打开yapi ->具体项目->设置->token 配置");
+        label8.setText("projectToken 获取方式 ： 打开yapi ->具体项目->设置->token 配置");
         yApi.add(label8, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
                 GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label9 = new JLabel();

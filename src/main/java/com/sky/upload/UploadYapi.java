@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -48,8 +49,8 @@ public class UploadYapi {
 
 
     // projectId -> {method: Set<urlPath>}
-    public static Map<Integer, Map<String, Set<String>>> uploadedUrlPath = new HashMap<>();
-    public static Map<Integer, Map<String, Integer>> catMap = new HashMap<>();
+    public static Map<Integer, Map<String, Set<String>>> uploadedUrlPath = new ConcurrentHashMap<>();
+    public static Map<Integer, Map<String, Integer>> catMap = new ConcurrentHashMap<>();
 
     /**
      * Upload save yapi response.

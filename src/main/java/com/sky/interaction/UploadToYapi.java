@@ -40,7 +40,7 @@ public class UploadToYapi extends AnAction {
     private final PersistentState persistentState = PersistentState.getInstance();
 
     static {
-        NOTIFICATION_GROUP = new NotificationGroup("Java2Json.NotificationGroup", NotificationDisplayType.BALLOON,
+        NOTIFICATION_GROUP = new NotificationGroup("sky-yapi.NotificationGroup", NotificationDisplayType.BALLOON,
                 true);
     }
 
