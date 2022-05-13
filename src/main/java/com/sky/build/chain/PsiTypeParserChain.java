@@ -3,7 +3,9 @@ package com.sky.build.chain;
 import com.intellij.psi.PsiType;
 import com.sky.build.KV;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author gangyf
@@ -13,7 +15,7 @@ public class PsiTypeParserChain {
 
     private static final AbstractPsiTypeParser FIRST_PSI_TYPE_PARSER;
 
-    private static final ThreadLocal<String> PARSING_CLASS = ThreadLocal.withInitial(String::new);
+    private static final ThreadLocal<Set<String>> PARSING_CLASS = ThreadLocal.withInitial(HashSet::new);
 
     static {
 
@@ -57,7 +59,7 @@ public class PsiTypeParserChain {
      * @return the boolean
      */
     public static boolean circularReference(String qualifiedClassName) {
-        return qualifiedClassName.equals(PARSING_CLASS.get());
+        return PARSING_CLASS.get().contains(qualifiedClassName);
     }
 
     /**
@@ -66,7 +68,11 @@ public class PsiTypeParserChain {
      * @param qualifiedClassName the qualified class name
      */
     public static void setCurrentParsingPasiType(String qualifiedClassName) {
-        PARSING_CLASS.set(qualifiedClassName);
+        PARSING_CLASS.get().add(qualifiedClassName);
+    }
+
+    public static void clear() {
+        PARSING_CLASS.get().clear();
     }
 
 }

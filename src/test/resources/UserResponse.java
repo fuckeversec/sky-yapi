@@ -23,6 +23,11 @@ public class UserResponse implements Serializable {
 
     private String firstName;
 
+    /**
+     * 测试基本类型
+     */
+    private int testInt;
+
     @NotNull
     @Length(max = 64, min = 1)
     @Size(max = 64, min = 1, message = "长度不能超过64")

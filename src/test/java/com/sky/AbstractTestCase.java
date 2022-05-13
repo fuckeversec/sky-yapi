@@ -28,13 +28,16 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractTestCase extends LightJavaCodeInsightTestCase {
 
-    protected Map<String, PsiClass> psiClassMap;
+    protected Project project;
 
+    protected Map<String, PsiClass> psiClassMap;
 
     @Override
     public void setUp() throws Exception {
         Disposable testRootDisposable = getTestRootDisposable();
-        Project project = new MockProjectEx(testRootDisposable);
+
+        project = new MockProjectEx(testRootDisposable);
+
         PARSE_CONTEXT_THREAD_LOCAL.set(ParseContext.builder().project(project).build());
 
         super.setUp();
@@ -43,6 +46,7 @@ public abstract class AbstractTestCase extends LightJavaCodeInsightTestCase {
                         "UserRequest.java", "GenderEnum.java", "MediaType.java").map(fileName -> {
                     InputStream resourceAsStream = this.getClass().getResourceAsStream("/" + fileName);
                     try {
+                        assert resourceAsStream != null;
                         String content = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
                         return getPsiClass(fileName, content);
                     } catch (IOException e) {
@@ -52,6 +56,8 @@ public abstract class AbstractTestCase extends LightJavaCodeInsightTestCase {
                 }).filter(Objects::nonNull)
                 .collect(Collectors.toMap(psiClass -> Objects.requireNonNull(psiClass.getName()).replace(".java", ""),
                         Function.identity()));
+
+        psiClassMap.values().forEach(psiClass -> PARSE_CONTEXT_THREAD_LOCAL.get().setPsiClass(psiClass));
     }
 
     @Override

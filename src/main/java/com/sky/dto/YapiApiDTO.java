@@ -73,4 +73,11 @@ public class YapiApiDTO implements Serializable {
     @JsonProperty("req_params")
     private List<ValueWrapper> reqParams;
 
+    /**
+     * 校验参数合法性
+     */
+    public void check() {
+
+    }
+
 }

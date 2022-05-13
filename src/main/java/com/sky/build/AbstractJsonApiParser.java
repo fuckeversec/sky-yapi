@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiParameterList;
+import com.sky.build.chain.PsiTypeParserChain;
 import com.sky.constant.SpringMVCConstant;
 import com.sky.dto.YapiApiDTO;
 import com.sky.util.DesUtil;
@@ -98,12 +99,14 @@ public abstract class AbstractJsonApiParser implements JsonApiParser {
                 if (psiElement instanceof PsiParameterList) {
 
                     parseRequest((PsiParameterList) psiElement, yapiApiDTO);
+                    PsiTypeParserChain.clear();
                 }
             }
 
         });
 
         parseResponse(project, psiMethod, yapiApiDTO);
+        PsiTypeParserChain.clear();
 
         PARSE_CONTEXT_THREAD_LOCAL.remove();
         return yapiApiDTO;

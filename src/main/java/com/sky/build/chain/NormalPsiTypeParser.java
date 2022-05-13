@@ -3,6 +3,7 @@ package com.sky.build.chain;
 import static com.sky.build.AbstractJsonApiParser.PARSE_CONTEXT_THREAD_LOCAL;
 
 import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiUtil;
 import com.sky.build.KV;
@@ -23,7 +24,8 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
 
     @Override
     void parser(PsiType psiType, KV<String, Object> kv) {
-        if (Objects.isNull(PsiUtil.resolveClassInType(psiType))) {
+        if (Objects.isNull(PsiUtil.resolveClassInType(psiType))
+                && !(psiType instanceof PsiPrimitiveType)) {
             return;
         }
 
@@ -39,7 +41,8 @@ public class NormalPsiTypeParser extends AbstractPsiTypeParser {
     @Override
     void parser(PsiField psiField, KV<String, Object> kv) {
 
-        if (Objects.isNull(PsiUtil.resolveClassInType(psiField.getType()))) {
+        if (Objects.isNull(PsiUtil.resolveClassInType(psiField.getType()))
+                && !(psiField.getType() instanceof PsiPrimitiveType)) {
             return;
         }
 

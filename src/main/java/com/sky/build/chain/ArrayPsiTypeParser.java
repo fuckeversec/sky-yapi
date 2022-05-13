@@ -29,6 +29,7 @@ public class ArrayPsiTypeParser extends AbstractPsiTypeParser {
 
         KV<String, Object> items = KV.create();
         kv.set("items", items);
+        kv.set("description", psiType.getPresentableText());
         firstPsiTypeParser.parser(psiType, items);
     }
 
